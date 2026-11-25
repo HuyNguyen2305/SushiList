@@ -8,5 +8,6 @@ import { useStore } from '../store'
 afterEach(async () => {
   cleanup()
   await db.tasks.clear()
-  useStore.setState({ tasks: [], ready: false, error: null, selectedId: null, undoable: null, flight: null })
+  await db.meta.clear()
+  useStore.setState({ tasks: [], ready: false, error: null, selectedId: null, undoable: null, flight: null, storage: null })
 })

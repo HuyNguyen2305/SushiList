@@ -1,22 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { typeOf, type Task } from '../data'
+import { eatPlate } from '../eat'
 import { useStore } from '../store'
 import { TaskForm } from './TaskForm'
-
-/** Where the plate sits on screen right now, kept inside the visible belt, so the flight starts there. */
-function plateRect(id: string): DOMRect | undefined {
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined
-  const r = document.querySelector(`[data-plate="${id}"]`)?.getBoundingClientRect()
-  const belt = document.querySelector('.belt')?.getBoundingClientRect()
-  if (!r || !belt || r.width === 0) return undefined
-  const left = Math.min(Math.max(r.left, belt.left), belt.right - r.width)
-  return new DOMRect(left, r.top, r.width, r.height)
-}
 
 function Row({ task }: { task: Task }) {
   const update = useStore((s) => s.update)
   const remove = useStore((s) => s.remove)
-  const eat = useStore((s) => s.eat)
   const selected = useStore((s) => s.selectedId === task.id)
   const [editing, setEditing] = useState(false)
   const ref = useRef<HTMLLIElement>(null)
@@ -56,7 +46,7 @@ function Row({ task }: { task: Task }) {
           {task.note && ` · ${task.note}`}
         </p>
       </div>
-      <button type="button" onClick={() => void eat(task.id, plateRect(task.id))} aria-label={`Eat ${task.title}`} className="h-11 rounded-xl bg-navy px-3 text-sm font-bold text-white">
+      <button type="button" onClick={() => void eatPlate(task.id)} aria-label={`Eat ${task.title}`} className="h-11 rounded-xl bg-navy px-3 text-sm font-bold text-white">
         Eat
       </button>
       <button type="button" onClick={() => setEditing(true)} aria-label={`Edit ${task.title}`} className="h-11 rounded-xl bg-counter px-3 text-sm font-bold">

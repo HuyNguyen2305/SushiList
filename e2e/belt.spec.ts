@@ -23,6 +23,15 @@ test('dragging a plate reorders the belt and the order survives a reload', async
   await expect.poll(() => names(page)).toEqual(['Three', 'One', 'Two'])
 })
 
+test('with reduced motion the belt stands still as a scrollable row', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await page.getByLabel('Task title').first().fill('One')
+  await page.getByRole('button', { name: 'Order' }).click()
+  await expect(page.locator('.belt-track')).toHaveCSS('animation-name', 'none')
+  await expect(page.locator('.belt')).toHaveCSS('overflow-x', 'auto')
+})
+
 test('the belt moves, and pausing stops it', async ({ page }) => {
   await page.goto('/')
   await page.getByLabel('Task title').first().fill('One')

@@ -44,9 +44,15 @@ body {
   animation-play-state: paused;
 }
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: the belt stands still (a plain scrollable row) and completion is a short fade. */
 @media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
+  .belt-track {
+    animation: none;
   }
 }

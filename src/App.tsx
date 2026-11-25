@@ -1,13 +1,16 @@
 import { MotionConfig } from 'motion/react'
 import { useEffect, useState } from 'react'
+import { BackupCard } from './components/BackupCard'
 import { Belt } from './components/Belt'
 import { Flight } from './components/Flight'
 import { History } from './components/History'
+import { Notices } from './components/Notices'
 import { Stack } from './components/Stack'
 import { TaskForm } from './components/TaskForm'
 import { TaskList } from './components/TaskList'
 import { Toast } from './components/Toast'
 import { useStore } from './store'
+import { useShortcuts } from './useShortcuts'
 import { useToday } from './useToday'
 
 const todayLabel = () => new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
@@ -21,6 +24,7 @@ export default function App() {
   const sortByDue = useStore((s) => s.sortByDue)
   const [paused, setPaused] = useState(false)
   const today = useToday()
+  useShortcuts()
 
   useEffect(() => {
     void load()
@@ -44,12 +48,15 @@ export default function App() {
           </div>
         </header>
 
+        <Notices />
+
         {error && (
           <p role="alert" className="m-0 bg-tomato px-5 py-2 text-sm font-bold text-white lg:px-12">
             {error}
           </p>
         )}
 
+        <main className="flex flex-1 flex-col">
         <section className="flex flex-col gap-2 pt-3.5">
           <div className="mx-5 flex flex-wrap items-center justify-between gap-2 lg:mx-12">
             <h2 className="text-sm font-extrabold tracking-wider text-label uppercase">On the belt · {open.length} orders</h2>
@@ -76,7 +83,7 @@ export default function App() {
           )}
         </section>
 
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:flex-row lg:px-12 lg:py-6">
+        <div className="flex flex-1 flex-col gap-4 p-4 lg:flex-row lg:px-12 lg:py-6">
           <div className="flex flex-col gap-4 lg:w-[560px]">
             <TaskForm submitLabel="Order" onSubmit={(input) => void add(input)} />
             <TaskList tasks={open} />
@@ -86,7 +93,9 @@ export default function App() {
               <Stack done={doneToday} today={today} />
             </section>
             <History done={earlier} />
+            <BackupCard />
           </div>
+        </div>
         </main>
       </div>
       <Flight />
