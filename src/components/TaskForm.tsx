@@ -1,5 +1,8 @@
 import { useId, useState, type FormEvent } from 'react'
-import { SUSHI_TYPES, type SushiTypeId, type TaskInput } from '../data'
+import type { TaskInput } from '../data'
+import { useStore } from '../store'
+import { CategoryManager } from './CategoryManager'
+import { NoteDialog } from './NoteDialog'
 
 const field =
   'h-11 min-w-0 rounded-[14px] bg-[#FFF8EE] px-3.5 text-[15px] font-semibold placeholder:text-[#7A6A5C]'
@@ -12,13 +15,17 @@ type Props = {
   /** The add form: just title + button, with the other fields tucked into a "Details" disclosure. */
   compact?: boolean
   /** Sushi type used when the details are folded away; the add form rotates it so the belt is varied. */
-  defaultType?: SushiTypeId
+  defaultType?: string
   className?: string
 }
 
 export function TaskForm({ initial, submitLabel, onSubmit, onCancel, compact, defaultType, className = '' }: Props) {
   const uid = useId()
+  const cats = useStore((s) => s.categories)
   const [showMore, setShowMore] = useState(false)
+  const [note, setNote] = useState(initial?.note ?? '')
+  const [noteOpen, setNoteOpen] = useState(false)
+  const [catsOpen, setCatsOpen] = useState(false)
   function handle(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const form = e.currentTarget
@@ -28,26 +35,31 @@ export function TaskForm({ initial, submitLabel, onSubmit, onCancel, compact, de
     onSubmit({
       title,
       // These fields are not in the form while the add form's details are folded away.
-      note: String(d.get('note') ?? ''),
+      note,
       dueDate: String(d.get('dueDate') ?? ''),
-      sushiTypeId: String(d.get('sushiTypeId') ?? defaultType ?? SUSHI_TYPES[0].id) as SushiTypeId,
+      sushiTypeId: String(d.get('sushiTypeId') ?? defaultType ?? cats[0].id),
     })
     form.reset()
+    setNote(initial?.note ?? '')
     setShowMore(false)
   }
 
   const fields = (
     <div className="flex flex-wrap gap-2">
-      <label className="sr-only" htmlFor={`${uid}-sushiTypeId`}>Sushi type</label>
-      <select id={`${uid}-sushiTypeId`} name="sushiTypeId" defaultValue={initial?.sushiTypeId ?? defaultType ?? SUSHI_TYPES[0].id} className={field}>
-        {SUSHI_TYPES.map((t) => (
+      <label className="sr-only" htmlFor={`${uid}-sushiTypeId`}>Category</label>
+      <select id={`${uid}-sushiTypeId`} name="sushiTypeId" defaultValue={initial?.sushiTypeId ?? defaultType ?? cats[0].id} className={field}>
+        {cats.map((t) => (
           <option key={t.id} value={t.id}>{t.name}</option>
         ))}
       </select>
+      <button type="button" onClick={() => setCatsOpen(true)} className={`${field} bg-white/70 font-bold`}>Edit categories</button>
       <label className="sr-only" htmlFor={`${uid}-dueDate`}>Due date</label>
       <input id={`${uid}-dueDate`} name="dueDate" type="date" defaultValue={initial?.dueDate} className={field} />
-      <label className="sr-only" htmlFor={`${uid}-note`}>Note</label>
-      <input id={`${uid}-note`} name="note" defaultValue={initial?.note} placeholder="Note (optional)" className={`${field} flex-1`} />
+      <button type="button" onClick={() => setNoteOpen(true)} className={`${field} min-w-40 flex-1 truncate text-left ${note ? '' : 'text-[#7A6A5C]'}`}>
+        {note ? note.replace(/\s+/g, ' ') : 'Add a note…'}
+      </button>
+      <CategoryManager open={catsOpen} onClose={() => setCatsOpen(false)} />
+      <NoteDialog open={noteOpen} value={note} title={initial?.title ?? ''} onSave={setNote} onClose={() => setNoteOpen(false)} />
     </div>
   )
 
@@ -65,7 +77,7 @@ export function TaskForm({ initial, submitLabel, onSubmit, onCancel, compact, de
           name="title"
           required
           defaultValue={initial?.title}
-          placeholder="New order, e.g. Pay rent"
+          autoComplete="off" placeholder="New order, e.g. Pay rent…"
           className={`${field} flex-1 ${compact ? 'h-12 xl:h-[46px] xl:rounded-[10px] xl:border-2 xl:border-[#D8C6AE] xl:bg-white' : ''}`}
         />
         {compact && (

@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import { makeBackup, parseBackup } from './backup'
-import type { Task } from './data'
+import { DEFAULT_CATEGORIES, type Task } from './data'
 import { useStore } from './store'
 import { staleBackupDays } from './storage'
 
@@ -17,7 +17,7 @@ const task = (over: Partial<Task> = {}): Task => ({
 it('a backup round-trips through export and parse', () => {
   const tasks = [task(), task({ id: 'b', status: 'done', completedAt: '2026-11-25T11:00:00.000Z', dayKey: '2026-11-25', stackTilt: 1.5, dueDate: '2026-12-01', note: 'x' })]
   const parsed = parseBackup(JSON.stringify(makeBackup(tasks)))
-  expect(parsed).toEqual({ ok: true, tasks: expect.arrayContaining(tasks.map((t) => expect.objectContaining(t))) })
+  expect(parsed).toEqual({ ok: true, categories: DEFAULT_CATEGORIES, tasks: expect.arrayContaining(tasks.map((t) => expect.objectContaining(t))) })
 })
 
 it.each([
@@ -51,4 +51,13 @@ it('reminds about a backup after 7 days, counted from the last backup or the fir
   expect(staleBackupDays(base, now)).toBe(15)
   expect(staleBackupDays({ ...base, lastBackupAt: '2026-11-20T12:00:00Z' }, now)).toBeNull()
   expect(staleBackupDays({ ...base, lastBackupAt: '2026-11-18T12:00:00Z' }, now)).toBe(7)
+})
+
+it('keeps custom categories through a backup, and rejects bad ones', () => {
+  const cats = [{ id: 'study', name: 'Study', colour: '#112233', art: 'tuna' as const }]
+  const t = task({ sushiTypeId: 'study' })
+  const ok = parseBackup(JSON.stringify(makeBackup([t], cats)))
+  expect(ok).toEqual({ ok: true, categories: cats, tasks: [expect.objectContaining({ sushiTypeId: 'study' })] })
+  expect(parseBackup(JSON.stringify(makeBackup([task({ sushiTypeId: 'gone' })], cats)))).toMatchObject({ ok: false })
+  expect(parseBackup(JSON.stringify({ schemaVersion: 2, tasks: [], categories: [{ id: 'x', name: 'X', colour: 'red', art: 'tuna' }] }))).toMatchObject({ ok: false })
 })

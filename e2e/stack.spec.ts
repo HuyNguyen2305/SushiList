@@ -32,6 +32,8 @@ test('at midnight the stack empties into History and unfinished plates stay on t
 
   await page.clock.runFor('02:00') // past local midnight
   await expect(page.getByText('0 of 1 eaten').filter({ visible: true })).toBeVisible()
+  await page.getByRole('button', { name: 'History', exact: true }).click()
   await expect(page.getByText(/Wed, Nov 25 · 1 plate/)).toBeVisible()
+  await page.keyboard.press('Escape')
   await expect(page.getByRole('button', { name: 'Pick plate: Still open' })).toBeVisible()
 })

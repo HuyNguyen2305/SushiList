@@ -80,3 +80,19 @@ it('a plate added with no details gets clean defaults, not the text "null"', asy
   await useStore.getState().add({ title: 'Plain', sushiTypeId: 'salmon', note: '', dueDate: '' })
   expect(useStore.getState().tasks[0]).toMatchObject({ note: undefined, dueDate: undefined, sushiTypeId: 'salmon' })
 })
+
+it('categories can be added, renamed and deleted; plates of a deleted one move to the first', async () => {
+  await reload()
+  const s = useStore.getState()
+  const id = await s.addCategory({ name: '  Study ', colour: '#112233', art: 'tuna' })
+  expect(useStore.getState().categories.at(-1)).toMatchObject({ id, name: 'Study' })
+  await s.updateCategory({ ...useStore.getState().categories.at(-1)!, name: 'School' })
+  await s.add({ title: 'Essay', sushiTypeId: id! })
+
+  await reload()
+  expect(useStore.getState().categories.at(-1)?.name).toBe('School')
+
+  await s.removeCategory(id!)
+  expect(useStore.getState().tasks.find((t) => t.title === 'Essay')?.sushiTypeId).toBe(useStore.getState().categories[0].id)
+  expect(await s.addCategory({ name: '   ', colour: '#000000', art: 'ebi' })).toBeUndefined()
+})

@@ -10,6 +10,6 @@ const FILE: Record<SushiId, string> = {
 }
 
 /** One piece of sushi, drawn by the design's own illustrations in /public/sushi. */
-export function Sushi({ id }: { id: SushiId }) {
-  return <img src={`/sushi/${FILE[id]}.svg`} alt="" width={48} height={42} className="block h-[42px] w-12" />
+export function Sushi({ id, className = 'block h-[42px] w-12' }: { id: SushiId; className?: string }) {
+  return <img src={`/sushi/${FILE[id]}.svg`} alt="" width={48} height={42} className={className} />
 }

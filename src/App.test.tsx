@@ -38,7 +38,8 @@ it('eating a plate moves it to the stack, and Undo puts it back on the belt', as
   expect(screen.queryByRole('button', { name: 'Pick plate: Pay rent' })).not.toBeInTheDocument()
   expect(screen.getByText(/Ate/)).toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: "Today's plates" }))
+  expect(screen.getByText(/plate eaten today/)).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Receipt' }))
   expect(screen.getByText('Pay rent', { selector: 'li span' })).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Undo' }))

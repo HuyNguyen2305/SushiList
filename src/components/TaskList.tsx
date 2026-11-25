@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
-import { typeOf, type Task } from '../data'
+import type { Task } from '../data'
+import { dueLabel } from '../dates'
 import { eatPlate } from '../eat'
-import { useStore } from '../store'
+import { useCategory, useStore } from '../store'
+import { Sushi } from './Sushi'
 import { TaskForm } from './TaskForm'
 
 function Row({ task }: { task: Task }) {
   const update = useStore((s) => s.update)
   const remove = useStore((s) => s.remove)
+  const select = useStore((s) => s.select)
   const selected = useStore((s) => s.selectedId === task.id)
+  const type = useCategory(task.sushiTypeId)
   const [editing, setEditing] = useState(false)
   const ref = useRef<HTMLLIElement>(null)
 
@@ -20,6 +24,7 @@ function Row({ task }: { task: Task }) {
     return (
       <li ref={ref}>
         <TaskForm
+          className="rounded-lg"
           initial={task}
           submitLabel="Save"
           onSubmit={(input) => {
@@ -33,26 +38,23 @@ function Row({ task }: { task: Task }) {
   }
 
   return (
-    <li
-      ref={ref}
-      className={`flex items-center gap-2 rounded-2xl bg-white p-3 shadow-[0_2px_0_#E2CFB4] ${selected ? 'ring-4 ring-gold' : ''}`}
-    >
-      <span aria-hidden="true" className="size-4 shrink-0 rounded-full" style={{ background: typeOf(task.sushiTypeId).colour }} />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-extrabold">{task.title}</p>
-        <p className="truncate text-sm text-ink-soft">
-          {typeOf(task.sushiTypeId).name}
-          {task.dueDate && ` · due ${task.dueDate}`}
+    <li ref={ref} className={`flex items-center gap-2.5 border-b border-dotted border-[#C9B48F] px-1 py-2 ${selected ? 'bg-gold/30' : ''}`}>
+      <Sushi id={type.art} className="block h-8 w-9 shrink-0" />
+      <button type="button" aria-pressed={selected} onClick={() => select(selected ? null : task.id)} className="min-w-0 flex-1 cursor-pointer border-0 bg-transparent p-0 text-left">
+        <p className="m-0 truncate font-extrabold">{task.title}</p>
+        <p className="m-0 truncate text-xs text-ink-soft">
+          {type.name}
+          {task.dueDate && ` · due ${dueLabel(task.dueDate)}`}
           {task.note && ` · ${task.note}`}
         </p>
-      </div>
-      <button type="button" onClick={() => void eatPlate(task.id)} aria-label={`Eat ${task.title}`} className="h-11 rounded-xl bg-navy px-3 text-sm font-bold text-white">
+      </button>
+      <button type="button" onClick={() => void eatPlate(task.id)} aria-label={`Eat ${task.title}`} className="h-9 rounded-lg bg-navy px-3 text-sm font-bold text-white">
         Eat
       </button>
-      <button type="button" onClick={() => setEditing(true)} aria-label={`Edit ${task.title}`} className="h-11 rounded-xl bg-counter px-3 text-sm font-bold">
+      <button type="button" onClick={() => setEditing(true)} aria-label={`Edit ${task.title}`} className="h-9 rounded-lg px-2 text-sm font-bold text-ink-soft underline decoration-dotted underline-offset-2">
         Edit
       </button>
-      <button type="button" onClick={() => void remove(task.id)} aria-label={`Delete ${task.title}`} className="h-11 rounded-xl bg-tomato px-3 text-sm font-bold text-white">
+      <button type="button" onClick={() => void remove(task.id)} aria-label={`Delete ${task.title}`} className="h-9 rounded-lg px-2 text-sm font-bold text-tomato underline decoration-dotted underline-offset-2">
         Delete
       </button>
     </li>
@@ -60,9 +62,9 @@ function Row({ task }: { task: Task }) {
 }
 
 export function TaskList({ tasks }: { tasks: Task[] }) {
-  if (tasks.length === 0) return null
+  if (tasks.length === 0) return <p className="m-0 py-3 text-center text-sm text-ink-soft">No open orders.</p>
   return (
-    <ul className="m-0 flex list-none flex-col gap-2 p-0">
+    <ul className="m-0 flex list-none flex-col p-0">
       {tasks.map((t) => (
         <Row key={t.id} task={t} />
       ))}

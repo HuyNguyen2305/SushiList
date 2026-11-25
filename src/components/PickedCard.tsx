@@ -1,18 +1,22 @@
-import { typeOf } from '../data'
+import { useState } from 'react'
 import { dueLabel } from '../dates'
 import { eatPlate } from '../eat'
-import { useStore } from '../store'
+import { useCategory, useStore } from '../store'
+import { NoteDialog } from './NoteDialog'
 
 /** The counter card under the belt: a hint when nothing is picked, the picked plate with Eat when one is. */
 export function PickedCard({ openCount }: { openCount: number }) {
   const task = useStore((s) => s.tasks.find((t) => t.id === s.selectedId && t.status === 'open'))
   const select = useStore((s) => s.select)
   const remove = useStore((s) => s.remove)
+  const update = useStore((s) => s.update)
+  const type = useCategory(task?.sushiTypeId ?? '')
+  const [noteOpen, setNoteOpen] = useState(false)
 
   return (
     <section
       aria-label="Picked plate"
-      className="flex min-h-28 flex-col gap-2.5 rounded-[18px] bg-white p-4 shadow-[0_2px_0_#E2CFB4] xl:rounded-md xl:border-t-[6px] xl:border-tomato xl:bg-[#FBF5E9] xl:px-4 xl:py-3.5 xl:shadow-[0_4px_0_rgba(60,30,10,.35)]"
+      className="flex min-h-28 xl:min-h-0 flex-col gap-2.5 rounded-[18px] bg-white p-4 shadow-[0_2px_0_#E2CFB4] xl:rounded-md xl:border-t-[6px] xl:border-tomato xl:bg-[#FBF5E9] xl:px-4 xl:py-3.5 xl:shadow-lift"
     >
       {task ? (
         <>
@@ -20,9 +24,13 @@ export function PickedCard({ openCount }: { openCount: number }) {
             <span className="text-xs font-extrabold tracking-wide text-label uppercase">Picked plate</span>
             <span className="text-lg font-extrabold">{task.title}</span>
             <span className="text-[13px] text-ink-soft">
-              2 × {typeOf(task.sushiTypeId).dish}
+              2 × {type.dish}
               {task.dueDate && ` · due ${dueLabel(task.dueDate)}`}
             </span>
+            <button type="button" onClick={() => setNoteOpen(true)} className="mt-1 line-clamp-2 text-left text-[13px] text-ink-soft underline decoration-dotted underline-offset-2">
+              {task.note || 'Add a note…'}
+            </button>
+            <NoteDialog open={noteOpen} value={task.note ?? ''} title={task.title} onSave={(note) => void update(task.id, { ...task, note })} onClose={() => setNoteOpen(false)} />
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={() => void eatPlate(task.id)} className="h-11 flex-1 rounded-xl bg-tomato text-[15px] font-extrabold text-white">
