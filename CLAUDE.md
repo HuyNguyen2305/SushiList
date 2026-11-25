@@ -1,6 +1,6 @@
 # SushiList
 
-Stack: TBD. Update this line when the stack is chosen.
+Stack: React 19 + TypeScript, Vite, pnpm, Tailwind v4 (tokens in `src/index.css` `@theme`), Vitest + Testing Library. Static site, no backend. Later phases add Zustand, Dexie, Motion, dnd-kit, vite-plugin-pwa. Source of truth for the look: the "Sushibar UI design" canvas; for scope: the "Sushibar Task Planner: Development Plan" doc.
 
 ## Session routine
 1. Read `memory.md` (decisions, conventions, gotchas) and `progress.md` (done / in progress / next).
