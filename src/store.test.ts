@@ -75,3 +75,8 @@ it('deleting can be undone, and only the latest action is undoable', async () =>
   await useStore.getState().undo() // undoes the eat of B, not the delete of A
   expect((await reload()).map((t) => [t.title, t.status])).toEqual([['B', 'open']])
 })
+
+it('a plate added with no details gets clean defaults, not the text "null"', async () => {
+  await useStore.getState().add({ title: 'Plain', sushiTypeId: 'salmon', note: '', dueDate: '' })
+  expect(useStore.getState().tasks[0]).toMatchObject({ note: undefined, dueDate: undefined, sushiTypeId: 'salmon' })
+})

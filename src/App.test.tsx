@@ -11,6 +11,7 @@ it('adds a plate, edits it, then deletes it with a confirm click', async () => {
   await user.type(screen.getByLabelText('Task title'), 'Pay rent')
   await user.click(screen.getByRole('button', { name: 'Order' }))
   expect(await screen.findByRole('button', { name: 'Pick plate: Pay rent' })).toBeInTheDocument()
+  expect(screen.queryByText(/null/)).not.toBeInTheDocument() // folded-away fields must not save as "null"
 
   await user.click(screen.getByRole('button', { name: 'Edit Pay rent' }))
   const title = within(screen.getByRole('listitem')).getByLabelText('Task title')
@@ -30,10 +31,10 @@ it('eating a plate moves it to the stack, and Undo puts it back on the belt', as
   render(<App />)
   await user.type(await screen.findByLabelText('Task title'), 'Pay rent')
   await user.click(screen.getByRole('button', { name: 'Order' }))
-  expect(await screen.findByText('0 of 1 eaten')).toBeInTheDocument()
+  expect((await screen.findAllByText('0 of 1 eaten')).length).toBeGreaterThan(0)
 
   await user.click(screen.getByRole('button', { name: 'Eat Pay rent' }))
-  expect(await screen.findByText('1 of 1 eaten')).toBeInTheDocument()
+  expect((await screen.findAllByText('1 of 1 eaten')).length).toBeGreaterThan(0)
   expect(screen.queryByRole('button', { name: 'Pick plate: Pay rent' })).not.toBeInTheDocument()
   expect(screen.getByText(/Ate/)).toBeInTheDocument()
 
@@ -41,6 +42,6 @@ it('eating a plate moves it to the stack, and Undo puts it back on the belt', as
   expect(screen.getByText('Pay rent', { selector: 'li span' })).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Undo' }))
-  expect(await screen.findByText('0 of 1 eaten')).toBeInTheDocument()
+  expect((await screen.findAllByText('0 of 1 eaten')).length).toBeGreaterThan(0)
   expect(screen.getByRole('button', { name: 'Pick plate: Pay rent' })).toBeInTheDocument()
 })

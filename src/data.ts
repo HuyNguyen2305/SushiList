@@ -2,12 +2,13 @@ import type { SushiId } from './components/Sushi'
 
 // shortcut: sushi types are constants, not a Dexie table; add the table when custom types are built.
 export const SUSHI_TYPES = [
-  { id: 'salmon', name: 'Salmon · work', colour: '#3B6FD9', art: 'salmon' },
-  { id: 'tamago', name: 'Tamago · personal', colour: '#E0A526', art: 'tamago' },
-  { id: 'maki', name: 'Maki · errands', colour: '#2F9E6B', art: 'kappa' },
-  { id: 'tuna', name: 'Tuna', colour: '#D9483B', art: 'tuna' },
-  { id: 'ebi', name: 'Ebi', colour: '#8B5CC7', art: 'ebi' },
-] as const satisfies readonly { id: string; name: string; colour: string; art: SushiId }[]
+  { id: 'salmon', name: 'Salmon · work', dish: 'Salmon nigiri', colour: '#3B6FD9', art: 'salmon' },
+  { id: 'tamago', name: 'Tamago · personal', dish: 'Tamago nigiri', colour: '#E0A526', art: 'tamago' },
+  { id: 'maki', name: 'Maki · errands', dish: 'Cucumber maki', colour: '#2F9E6B', art: 'kappa' },
+  { id: 'tuna', name: 'Tuna', dish: 'Tuna nigiri', colour: '#D9483B', art: 'tuna' },
+  { id: 'ebi', name: 'Ebi', dish: 'Shrimp nigiri', colour: '#8B5CC7', art: 'ebi' },
+  { id: 'ikura', name: 'Ikura', dish: 'Salmon roe gunkan', colour: '#1F9CA6', art: 'ikura' },
+] as const satisfies readonly { id: string; name: string; dish: string; colour: string; art: SushiId }[]
 
 export type SushiTypeId = (typeof SUSHI_TYPES)[number]['id']
 

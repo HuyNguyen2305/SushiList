@@ -14,6 +14,8 @@ Plan: "Sushibar Task Planner: Development Plan" (Claude Docs). Look: "Sushibar U
 
 - Phase 4 (safe and installable): persistent-storage request (banner if refused), JSON export/import with validation and Merge/Replace, 7-day backup reminder, PWA (manifest, icons, offline via service worker), self-hosted fonts, reduced-motion pass, keyboard (arrows, Enter, E, Z, Space-to-reorder) and screen-reader labels. Unit tests (15) + 14 Playwright tests incl. offline and an axe scan.
 
+- UI fidelity pass (branch `ui-fidelity`, uncommitted): rebuilt the look from the latest "Sushibar UI design" canvas (version 1795581723-8e7c). Wide screens (1280px+) get the full izakaya scene (noren, sign, lanterns, chef with speech bubble, menu strips, shelf, wood counter with tea and chopsticks); phones and tablets get the navy header with scallops, oval plates, picked-plate card and a pinned order bar. Sushi pieces use the repo's `public/sushi/*.svg`. New default sushi type rotates per new plate; added Ikura.
+
 ## In progress
 - Awaiting approval of Phase 4 (on branch `phase-4`, uncommitted). MVP feature-complete.
 

@@ -21,11 +21,11 @@ test('plates work from the keyboard: arrows, Enter, E to eat, Z to undo', async 
   await page.keyboard.press('Enter') // toggles the selection off again
 
   await page.keyboard.press('e')
-  await expect(page.getByText('1 of 3 eaten')).toBeVisible()
+  await expect(page.getByText('1 of 3 eaten').filter({ visible: true })).toBeVisible()
   await expect(plate('Three')).toBeFocused() // focus moved to the neighbour, not lost
 
   await page.keyboard.press('z')
-  await expect(page.getByText('0 of 3 eaten')).toBeVisible()
+  await expect(page.getByText('0 of 3 eaten').filter({ visible: true })).toBeVisible()
   await expect(plate('Two')).toBeVisible()
 })
 

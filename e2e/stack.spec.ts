@@ -6,10 +6,10 @@ test('eat a plate: it lands on the stack, survives a reload, and Undo brings it 
   await page.getByRole('button', { name: 'Order' }).click()
 
   await page.getByRole('button', { name: 'Eat Pay rent' }).click()
-  await expect(page.getByText('1 of 1 eaten')).toBeVisible()
+  await expect(page.getByText('1 of 1 eaten').filter({ visible: true })).toBeVisible()
   await expect(page.locator('[data-landing]')).toBeVisible() // visible once the flight has landed
   await page.reload()
-  await expect(page.getByText('1 of 1 eaten')).toBeVisible()
+  await expect(page.getByText('1 of 1 eaten').filter({ visible: true })).toBeVisible()
 
   await page.getByRole('button', { name: 'Eat Pay rent' }).count() // gone: it is done
   await page.getByLabel('Task title').first().fill('Buy milk')
@@ -28,10 +28,10 @@ test('at midnight the stack empties into History and unfinished plates stay on t
     await page.getByRole('button', { name: 'Order' }).click()
   }
   await page.getByRole('button', { name: 'Eat Done today' }).click()
-  await expect(page.getByText('1 of 2 eaten')).toBeVisible()
+  await expect(page.getByText('1 of 2 eaten').filter({ visible: true })).toBeVisible()
 
   await page.clock.runFor('02:00') // past local midnight
-  await expect(page.getByText('0 of 1 eaten')).toBeVisible()
+  await expect(page.getByText('0 of 1 eaten').filter({ visible: true })).toBeVisible()
   await expect(page.getByText(/Wed, Nov 25 · 1 plate/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Pick plate: Still open' })).toBeVisible()
 })

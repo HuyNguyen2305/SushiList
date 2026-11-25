@@ -16,7 +16,7 @@ export function Toast() {
   }, [undoable, clear])
 
   return (
-    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-4 z-40 flex justify-center">
+    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-28 z-40 xl:bottom-4 flex justify-center">
       <AnimatePresence>
         {undoable && (
           <motion.div
