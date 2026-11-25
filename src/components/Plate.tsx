@@ -1,6 +1,7 @@
 import type { ComponentProps, CSSProperties, Ref } from 'react'
-import { typeOf, type Task } from '../data'
+import type { Task } from '../data'
 import { dueLabel, isOverdue } from '../dates'
+import { useCategory } from '../store'
 import { Sushi } from './Sushi'
 
 export const PLATE_W = 116
@@ -14,6 +15,11 @@ export function PlateSvg({ rim, className = 'absolute bottom-0 left-0' }: { rim:
       <ellipse cx="58" cy="44" rx="40" ry="10" fill="#000" opacity=".28" />
       <path d="M22 36 Q24 46 58 47 Q92 46 94 36 Z" fill={rim} />
       <path d="M22 36 Q24 46 58 47 Q92 46 94 36 Z" fill="#000" opacity=".22" />
+      {/* the plate's thickness: two darker ellipses stacked under the rim */}
+      <ellipse cx="58" cy="35" rx="56" ry="20" fill={rim} />
+      <ellipse cx="58" cy="35" rx="56" ry="20" fill="#000" opacity=".38" />
+      <ellipse cx="58" cy="32.5" rx="56" ry="20" fill={rim} />
+      <ellipse cx="58" cy="32.5" rx="56" ry="20" fill="#000" opacity=".16" />
       <ellipse cx="58" cy="30" rx="56" ry="20" fill={rim} />
       <ellipse cx="58" cy="28" rx="55" ry="18.5" fill="#fff" opacity=".18" />
       <ellipse cx="58" cy="30" rx="45" ry="14.5" fill="#FBFAF6" />
@@ -31,7 +37,7 @@ type Props = {
 } & ComponentProps<'button'>
 
 export function PlateView({ task, selected, rootRef, rootStyle, ...button }: Props) {
-  const type = typeOf(task.sushiTypeId)
+  const type = useCategory(task.sushiTypeId)
   const overdue = isOverdue(task.dueDate)
   return (
     <div ref={rootRef} style={rootStyle} className="relative flex w-[120px] shrink-0 flex-col items-center gap-1.5">

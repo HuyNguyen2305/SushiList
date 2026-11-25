@@ -16,6 +16,7 @@ type Target = { dx: number; dy: number; sx: number; sy: number }
 export function Flight() {
   const flight = useStore((s) => s.flight)
   const end = useStore((s) => s.endFlight)
+  const cats = useStore((s) => s.categories)
   const [target, setTarget] = useState<Target | null>(null)
 
   useLayoutEffect(() => {
@@ -33,7 +34,7 @@ export function Flight() {
 
   if (!flight || !target) return null
   const { from, task } = flight
-  const type = typeOf(task.sushiTypeId)
+  const type = typeOf(cats, task.sushiTypeId)
 
   return (
     <motion.div

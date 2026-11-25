@@ -32,7 +32,7 @@ test('with reduced motion the belt stands still as a scrollable row', async ({ p
   await expect(page.locator('.belt')).toHaveCSS('overflow-x', 'auto')
 })
 
-test('the belt moves, and pausing stops it', async ({ page }) => {
+test('the belt keeps moving, even when hovered', async ({ page }) => {
   await page.goto('/')
   await page.getByLabel('Task title').first().fill('One')
   await page.getByRole('button', { name: 'Order' }).click()
@@ -44,9 +44,17 @@ test('the belt moves, and pausing stops it', async ({ page }) => {
   await page.waitForTimeout(500)
   expect(await x()).toBeLessThan(a)
 
-  await page.getByRole('button', { name: 'Pause belt' }).click()
-  await page.mouse.move(0, 700)
+  await page.mouse.move(600, 400) // hovering the belt must not stop it
   const b = await x()
   await page.waitForTimeout(500)
-  expect(await x()).toBe(b)
+  expect(await x()).not.toBe(b)
+})
+
+test('the belt runs even with no plates on it', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByText('Nothing on the belt. Add your first plate.')).toBeVisible()
+  const x = () => page.locator('.belt-track').evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41)
+  const a = await x()
+  await page.waitForTimeout(500)
+  expect(await x()).toBeLessThan(a)
 })

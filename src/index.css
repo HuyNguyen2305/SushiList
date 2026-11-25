@@ -17,6 +17,61 @@
   --color-belt-edge: #a9aeb8;
   --color-wood: #e2b07a;
   --color-wood-edge: #c98f55;
+
+  /* One light from above (the lanterns), so every object throws the same warm shadow down. contact: sits on the
+     wood; lift: a card or paper resting on it; float: something picked up or standing apart. */
+  --shadow-contact: 0 1px 0 rgba(255, 236, 200, 0.4) inset, 0 2px 2px rgba(40, 18, 4, 0.4);
+  --shadow-lift: 0 2px 0 rgba(60, 30, 10, 0.2), 0 12px 18px -6px rgba(40, 20, 5, 0.55);
+  --shadow-float: 0 3px 0 rgba(60, 30, 10, 0.22), 0 20px 28px -8px rgba(30, 14, 3, 0.62);
+}
+
+:root {
+  --pk: 1.5; /* scale of the plate on the table */
+  --k: 1; /* how far the izakaya wall is scaled down on shorter screens, so the counter keeps its room */
+}
+@media (max-height: 1000px) {
+  :root {
+    --k: 0.8;
+  }
+}
+@media (max-height: 880px) {
+  :root {
+    --pk: 1.1;
+    --k: 0.55;
+  }
+}
+@media (max-height: 700px) {
+  :root {
+    --k: 0.45;
+  }
+}
+
+html {
+  -webkit-tap-highlight-color: transparent; /* our own :active feedback replaces the grey flash */
+  -webkit-text-size-adjust: 100%;
+}
+@media (pointer: fine) {
+  html {
+    overscroll-behavior: none; /* no page rubber-band with a mouse; touch keeps pull-to-refresh */
+  }
+}
+button,
+a,
+label,
+select,
+summary {
+  touch-action: manipulation; /* no double-tap-zoom delay */
+}
+button {
+  -webkit-user-select: none;
+  user-select: none; /* a long press on a control should not select its label */
+}
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* under 16px iOS zooms the page when a field is focused */
+  }
 }
 
 body {
@@ -33,16 +88,75 @@ body {
   }
 }
 
+/* A paper invoice on the table: a zigzag torn bottom edge and a soft contact shadow. */
+.invoice {
+  background-image: repeating-linear-gradient(0deg, transparent 0 27px, rgba(36, 48, 77, 0.06) 27px 28px);
+  filter: drop-shadow(0 10px 12px rgba(40, 20, 5, 0.5)) drop-shadow(0 2px 0 rgba(60, 30, 10, 0.25));
+}
+.invoice::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -9px;
+  height: 10px;
+  background:
+    linear-gradient(-45deg, transparent 7px, #fffdf6 0),
+    linear-gradient(45deg, transparent 7px, #fffdf6 0);
+  background-size: 14px 14px;
+  background-position: left top;
+}
+
+/* Belt depth: recessed channel, a polished rail on each edge, and a faint seam where the slats meet. */
+.belt {
+  position: relative;
+  border-image: linear-gradient(180deg, #d6dae2, #a9aeb8 45%, #7d828d) 1;
+  box-shadow:
+    inset 0 12px 14px -6px rgba(0, 0, 0, 0.45),
+    inset 0 -10px 12px -6px rgba(0, 0, 0, 0.35),
+    0 6px 10px rgba(30, 16, 8, 0.4);
+}
+.belt::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 22px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+.belt {
+  perspective: 640px;
+  perspective-origin: 50% 120%;
+}
+.belt-track,
+.belt-copy {
+  transform-style: preserve-3d;
+}
+.belt-copy {
+  position: relative;
+}
+/* Slats on a plane that leans back: far slats bunch up and move slower than the near ones. It lives on each
+   copy so the loop stays seamless (a rotation about the X axis projects the same wherever the copy is). */
+.belt-copy::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 175%;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.26) 0 2px, rgba(255, 255, 255, 0.11) 2px 4px, transparent 4px 38px),
+    linear-gradient(180deg, #2b2d34, #3d3f46 62%); /* the far end matches the belt's own colour, so the narrowing plane blends into both ends */
+  transform-origin: 50% 100%;
+  transform: translateZ(-2px) rotateX(46deg);
+  pointer-events: none;
+}
+
 .belt-track {
   animation: belt var(--belt-s, 33s) linear infinite;
   will-change: transform;
-}
-
-.belt:hover .belt-track,
-.belt:focus-within .belt-track,
-.belt:active .belt-track,
-.belt-track[data-paused] {
-  animation-play-state: paused;
 }
 
 @keyframes fade-in {
@@ -83,6 +197,16 @@ body {
     opacity: 0;
   }
 }
+@keyframes blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
 @keyframes bob {
   0%,
   100% {
@@ -105,14 +229,103 @@ body {
 .bob {
   animation: bob 3.2s ease-in-out infinite;
 }
+.blink {
+  animation: blink 5.5s ease-in-out infinite;
+}
 
-/* The orange wood counter under the belt, on wide screens only. */
+/* The orange wood counter under the belt, on wide screens only. The planks are a plane tipped away from the guest,
+   so the seams bunch toward the belt; the lantern light and the belt's shadow lie on top of it. */
+.table-plane {
+  display: none;
+}
 @media (min-width: 1280px) {
-  .wood-counter {
-    background-color: #b97a45;
+  .table-plane {
+    display: block;
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: #b97a45;
+    perspective: 700px;
+    perspective-origin: 50% -30%;
+    pointer-events: none;
+  }
+  .table-plane::before {
+    content: '';
+    position: absolute;
+    left: -30%;
+    right: -30%;
+    bottom: 0;
+    height: 160%;
     background-image:
-      repeating-linear-gradient(0deg, rgba(90, 50, 20, 0.1) 0 1px, transparent 1px 5px, rgba(255, 220, 170, 0.06) 5px 6px, transparent 6px 14px),
-      repeating-linear-gradient(90deg, transparent 0 318px, rgba(60, 30, 10, 0.25) 318px 320px);
+      repeating-linear-gradient(0deg, rgba(90, 50, 20, 0.1) 0 1px, transparent 1px 5px, rgba(255, 220, 170, 0.07) 5px 6px, transparent 6px 14px),
+      repeating-linear-gradient(90deg, transparent 0 318px, rgba(60, 30, 10, 0.3) 318px 320px);
+    transform-origin: 50% 100%;
+    transform: rotateX(34deg);
+  }
+  .wood-counter {
+    position: relative;
+    background-color: transparent;
+    background-image:
+      radial-gradient(ellipse 55% 45% at 30% 0%, rgba(255, 205, 140, 0.34), transparent 70%),
+      radial-gradient(ellipse 45% 40% at 85% 0%, rgba(255, 190, 120, 0.22), transparent 70%),
+      linear-gradient(180deg, rgba(60, 25, 5, 0.34), transparent 110px);
+    box-shadow: inset 0 3px 0 rgba(255, 226, 180, 0.35);
+  }
+  /* A woven bamboo placemat under the order cards. */
+  .placemat {
+    background-color: #d9c28f;
+    background-image: repeating-linear-gradient(90deg, rgba(120, 85, 40, 0.28) 0 2px, transparent 2px 9px), repeating-linear-gradient(0deg, rgba(255, 240, 200, 0.18) 0 1px, transparent 1px 6px);
+    border: 3px solid #8a6a3a;
+    box-shadow: 0 3px 0 rgba(70, 40, 12, 0.55), 0 14px 22px -6px rgba(40, 20, 5, 0.6), inset 0 0 0 3px rgba(60, 35, 10, 0.18);
+  }
+}
+
+/* The wall's layers drift a few pixels against each other with the pointer: far ones less, near ones more. */
+.depth-1 {
+  translate: calc(var(--px, 0) * -2px) calc(var(--py, 0) * -1px);
+}
+.depth-2 {
+  translate: calc(var(--px, 0) * -4px) calc(var(--py, 0) * -2px);
+}
+.depth-3 {
+  translate: calc(var(--px, 0) * -7px) calc(var(--py, 0) * -3px);
+}
+.depth-4 {
+  translate: calc(var(--px, 0) * -10px) calc(var(--py, 0) * -4px);
+}
+
+/* The picked plate on the table: it leans toward the pointer, sways slowly when you leave it alone, and a
+   gloss slides across its face. transform-style keeps the sushi standing off the plate in real depth. */
+.p3d {
+  transform-style: preserve-3d;
+}
+.plate-sway {
+  perspective: 600px;
+  animation: plate-sway 8s ease-in-out infinite;
+}
+.plate-tilt {
+  transform: rotateX(calc(var(--py, 0) * -9deg + 8deg)) rotateY(calc(var(--px, 0) * 12deg));
+  transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.plate-gloss {
+  background: radial-gradient(ellipse 55% 60% at calc(50% + var(--px, 0) * 28%) calc(40% + var(--py, 0) * 20%), rgba(255, 255, 255, 0.26), transparent 70%); /* no mix-blend-mode: it breaks preserve-3d and hides the plate */
+  pointer-events: none;
+}
+@keyframes plate-sway {
+  0%,
+  100% {
+    transform: rotateY(-4deg);
+  }
+  50% {
+    transform: rotateY(4deg);
+  }
+}
+@keyframes settle {
+  0% {
+    translate: 0 -3px;
+  }
+  60% {
+    translate: 0 1px;
   }
 }
 
@@ -122,7 +335,13 @@ body {
   .sway,
   .glow,
   .steam,
+  .blink,
+  .plate-sway,
   .bob {
     animation: none;
+  }
+  .plate-tilt {
+    transform: none;
+    transition: none;
   }
 }

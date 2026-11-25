@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Task, TaskInput } from './data'
+import { DEFAULT_CATEGORIES, typeOf, type Category, type Task, type TaskInput } from './data'
 import { dayKey } from './dates'
 import { makeBackup } from './backup'
 import { db } from './db'
@@ -11,6 +11,7 @@ type Flight = { task: Task; from: DOMRect; index: number }
 
 type State = {
   tasks: Task[]
+  categories: Category[]
   ready: boolean
   error: string | null
   selectedId: string | null
@@ -27,7 +28,10 @@ type State = {
   sortByDue: () => Promise<void>
   startStorage: () => Promise<void>
   exportBackup: () => Promise<void>
-  importTasks: (tasks: Task[], mode: 'merge' | 'replace') => Promise<void>
+  importTasks: (tasks: Task[], mode: 'merge' | 'replace', categories?: Category[]) => Promise<void>
+  addCategory: (c: Omit<Category, 'id'>) => Promise<string | undefined>
+  updateCategory: (c: Category) => Promise<void>
+  removeCategory: (id: string) => Promise<void>
   select: (id: string | null) => void
   clearUndo: () => void
   endFlight: () => void
@@ -39,6 +43,17 @@ const clean = (i: TaskInput): TaskInput => ({
   dueDate: i.dueDate || undefined,
   sushiTypeId: i.sushiTypeId,
 })
+
+/** The categories the current store holds, as the picker and the plates see them. */
+export const useCategory = (id: string) => {
+  const cats = useStore((s) => s.categories)
+  return typeOf(cats, id)
+}
+
+/** The ordered category list is one meta row, so the user's order survives a reload. */
+const saveCategories = (cats: Category[]) => db.meta.put({ key: 'categories', value: cats })
+
+const readCategories = async () => ((await db.meta.get('categories'))?.value as Category[] | undefined) ?? DEFAULT_CATEGORIES
 
 const byBelt = (a: Task, b: Task) => a.beltOrder - b.beltOrder
 const isOpen = (t: Task) => t.status === 'open'
@@ -55,6 +70,7 @@ async function save(set: (s: Partial<State>) => void, write: () => Promise<Parti
 
 export const useStore = create<State>((set, get) => ({
   tasks: [],
+  categories: DEFAULT_CATEGORIES,
   ready: false,
   error: null,
   selectedId: null,
@@ -73,7 +89,7 @@ export const useStore = create<State>((set, get) => ({
     }
   },
   exportBackup: async () => {
-    const blob = new Blob([JSON.stringify(makeBackup(get().tasks), null, 2)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(makeBackup(get().tasks, get().categories), null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -84,22 +100,55 @@ export const useStore = create<State>((set, get) => ({
     await get().startStorage()
   },
   // Merge keeps what is here and adds plates with new ids at the end of the belt; replace swaps everything.
-  importTasks: (incoming, mode) =>
+  importTasks: (incoming, mode, cats = []) =>
     save(set, async () => {
       const have = new Set(get().tasks.map((t) => t.id))
       const offset = Math.max(0, ...get().tasks.map((t) => t.beltOrder))
       const add = mode === 'merge' ? incoming.filter((t) => !have.has(t.id)).map((t) => ({ ...t, beltOrder: t.beltOrder + offset })) : incoming
-      await db.transaction('rw', db.tasks, async () => {
+      await db.transaction('rw', db.tasks, db.meta, async () => {
         if (mode === 'replace') await db.tasks.clear()
         await db.tasks.bulkPut(add)
+        // Categories from the file are added by id; ones already here keep the user's edits (replace takes the file's).
+        const known = new Set(get().categories.map((c) => c.id))
+        if (cats.length) await saveCategories(mode === 'replace' ? cats : [...get().categories, ...cats.filter((c) => !known.has(c.id))])
       })
-      return { tasks: await db.tasks.orderBy('beltOrder').toArray(), selectedId: null, undoable: null, flight: null }
+      return { categories: await readCategories(), tasks: await db.tasks.orderBy('beltOrder').toArray(), selectedId: null, undoable: null, flight: null }
     }),
   load: () =>
-    save(set, async () => ({
-      tasks: await db.tasks.orderBy('beltOrder').toArray(),
-      ready: true,
-    })),
+    save(set, async () => {
+      const categories = await readCategories()
+      return { categories, tasks: await db.tasks.orderBy('beltOrder').toArray(), ready: true }
+    }),
+  addCategory: async (c) => {
+    const category = { ...c, id: crypto.randomUUID(), name: c.name.trim() }
+    if (!category.name) return undefined
+    await save(set, async () => {
+      const next = [...get().categories, category]
+      await saveCategories(next)
+      return { categories: next }
+    })
+    return category.id
+  },
+  updateCategory: (c) =>
+    save(set, async () => {
+      const next = { ...c, name: c.name.trim() }
+      if (!next.name) return {}
+      const all = get().categories.map((x) => (x.id === c.id ? next : x))
+      await saveCategories(all)
+      return { categories: all }
+    }),
+  // Plates of a deleted category move to the first remaining one; the last category cannot be deleted.
+  removeCategory: (id) =>
+    save(set, async () => {
+      const left = get().categories.filter((c) => c.id !== id)
+      if (left.length === 0 || left.length === get().categories.length) return {}
+      const moved = get().tasks.filter((t) => t.sushiTypeId === id)
+      await db.transaction('rw', db.tasks, db.meta, async () => {
+        await saveCategories(left)
+        await db.tasks.bulkUpdate(moved.map((t) => ({ key: t.id, changes: { sushiTypeId: left[0].id } })))
+      })
+      return { categories: left, tasks: get().tasks.map((t) => (t.sushiTypeId === id ? { ...t, sushiTypeId: left[0].id } : t)) }
+    }),
   add: (input) =>
     save(set, async () => {
       const task: Task = {

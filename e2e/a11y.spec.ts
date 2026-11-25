@@ -11,7 +11,7 @@ test('no automated accessibility violations with plates, a stack and the import 
   await page.getByLabel('Task title').first().fill('Buy milk')
   await page.getByRole('button', { name: 'Order' }).click()
   await page.getByRole('button', { name: 'Eat Buy milk' }).click()
-  await page.getByRole('button', { name: "Today's plates" }).click()
+  await page.getByRole('button', { name: 'Receipt' }).click()
 
   const results = await new AxeBuilder({ page }).analyze()
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`)).toEqual([])

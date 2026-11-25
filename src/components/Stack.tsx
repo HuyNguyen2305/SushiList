@@ -1,93 +1,80 @@
-import { AnimatePresence, motion } from 'motion/react'
+import { motion } from 'motion/react'
 import { useState } from 'react'
-import { typeOf, type Task } from '../data'
-import { timeLabel } from '../dates'
+import type { Task } from '../data'
+import { dayLabel, timeLabel } from '../dates'
 import { EASE_OUT } from '../motion'
-import { useStore } from '../store'
+import { useCategory } from '../store'
+import { Modal } from './Modal'
 
-const PILE = 10 // after this many plates the stack starts a second pile beside it
-
-function Pile({ plates }: { plates: Task[] }) {
-  const flightId = useStore((s) => s.flight?.task.id)
+function ReceiptLine({ task }: { task: Task }) {
+  const type = useCategory(task.sushiTypeId)
   return (
-    <div className="flex w-[150px] flex-col-reverse items-center xl:w-[170px]">
-      <div aria-hidden="true" className="mt-1 h-2.5 w-[150px] rounded bg-[#B07A47] xl:mt-0.5 xl:h-2 xl:rounded-[50%] xl:bg-[rgba(40,20,5,.35)]" />
-      {plates.length === 0 && (
-        <div className="h-3.5 w-34 rounded-[50%] border-3 border-dashed border-[#B9A184] xl:border-[#FBF5E9]" />
-      )}
-      {plates.map((d) => {
-        const colour = typeOf(d.sushiTypeId).colour
-        return (
-          <div
-            key={d.id}
-            data-landing={d.id}
-            className="-mb-[3px] flex flex-col items-center motion-reduce:animate-[fade-in_.2s_ease-out]"
-            style={{ transform: `rotate(${d.stackTilt ?? 0}deg)`, visibility: flightId === d.id ? 'hidden' : undefined }}
-          >
-            <div className="h-3 w-34 rounded-t-md rounded-b-[40px] shadow-[inset_0_3px_0_rgba(255,255,255,.45)]" style={{ background: colour }} />
-            <div className="h-1.5 w-23 rounded-b-md brightness-75" style={{ background: colour }} />
-          </div>
-        )
-      })}
-    </div>
+    <li className="flex items-baseline gap-3 border-b border-dotted border-[#C9B48F] py-1.5">
+      <span className="w-16 shrink-0 text-ink-soft">{task.completedAt && timeLabel(task.completedAt)}</span>
+      <span className="min-w-0 flex-1 truncate font-bold">{task.title}</span>
+      <span className="shrink-0 text-xs text-ink-soft">{type.name}</span>
+    </li>
   )
 }
 
-/** Today's finished plates. `today` keys the piles so the stack slides away at midnight. */
-export function Stack({ done, today }: { done: Task[]; today: string }) {
+/**
+ * The tab at the foot of the task list: how many plates were eaten today, and the receipt that lists them.
+ * The small plate is where an eaten plate lands (`data-landing`).
+ */
+export function Stack({ done }: { done: Task[] }) {
   const [open, setOpen] = useState(false)
-  const sorted = [...done].sort((a, b) => (a.completedAt ?? '').localeCompare(b.completedAt ?? ''))
-  const piles = Array.from({ length: Math.max(1, Math.ceil(sorted.length / PILE)) }, (_, i) => sorted.slice(i * PILE, (i + 1) * PILE))
+  const [seen] = useState(done.length) // the seal only stamps for plates eaten while you watch
+  const newest = [...done].sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))
+  const today = done[0]?.dayKey
 
   return (
-    <div className="flex items-end gap-4 xl:min-h-[150px] xl:flex-1 xl:gap-5">
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={today}
-          className="flex shrink-0 flex-wrap items-end gap-4"
-          exit={{ x: 240, opacity: 0 }}
-          transition={{ duration: 0.3, ease: EASE_OUT }}
-        >
-          {piles.map((p, i) => (
-            <Pile key={i} plates={p} />
-          ))}
-        </motion.div>
-      </AnimatePresence>
-
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5 pb-1.5 xl:rounded-md xl:bg-[#FBF5E9] xl:px-4 xl:py-3.5 xl:shadow-[0_4px_0_rgba(60,30,10,.35)]">
-        <h2 className="m-0 text-sm font-extrabold tracking-wider text-label uppercase xl:text-[13px]">
-          Your stack<span className="hidden xl:inline"> · tab</span>
-        </h2>
-        <span className="font-display text-[40px] leading-none font-semibold xl:text-[38px]">{done.length}</span>
-        <span className="text-sm text-ink-soft">plates eaten today</span>
-        {[...sorted].reverse().slice(0, 3).map((d) => (
-          <span key={d.id} className="flex items-center gap-1.5 text-[13px] font-semibold">
-            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2F7D55" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12l5 5L19 7" />
-            </svg>
-            <span className="max-w-44 truncate xl:max-w-60">{d.title}</span>
-          </span>
-        ))}
-        <button
-          type="button"
-          aria-expanded={open}
-          onClick={() => setOpen(!open)}
-          className="mt-1 h-11 self-start rounded-xl bg-white px-3 text-sm font-bold shadow-[0_2px_0_#E2CFB4] xl:bg-counter xl:shadow-none"
-        >
-          Today&apos;s plates
+    <>
+      <div className="flex shrink-0 items-center gap-3 border-t-2 border-dashed border-[#B9A27A] px-1 pt-3">
+        <span aria-hidden="true" className="relative block h-3.5 w-9 shrink-0 rounded-[50%] bg-[#F4EFE2] shadow-[0_2px_0_rgba(60,30,10,.35)]">
+          <span className="absolute inset-x-1.5 inset-y-0.5 rounded-[50%] bg-[#DDD6C4]" />
+        </span>
+        <p className="m-0 min-w-0 flex-1 truncate font-mono text-sm font-bold">
+          <span className="text-lg font-extrabold tabular-nums">{done.length}</span> {done.length === 1 ? 'plate' : 'plates'} eaten today
+        </p>
+        {done.length > 0 && (
+          <motion.span
+            key={done.length}
+            aria-hidden="true"
+            initial={done.length === seen ? false : { opacity: 0, scale: 1.7, rotate: -18 }}
+            animate={{ opacity: 0.88, scale: 1, rotate: -8 }}
+            transition={{ duration: 0.22, ease: EASE_OUT }}
+            className="flex size-7 shrink-0 items-center justify-center rounded-full border-2 border-tomato font-jp text-sm leading-none text-tomato"
+          >
+            済
+          </motion.span>
+        )}
+        <button type="button" onClick={() => setOpen(true)} className="h-9 shrink-0 rounded-lg bg-navy px-3.5 text-sm font-extrabold text-white">
+          Receipt
         </button>
-        {open && (
-          <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm">
-            {done.length === 0 && <li className="text-ink-soft">Nothing eaten yet today.</li>}
-            {[...sorted].reverse().map((d) => (
-              <li key={d.id} className="flex gap-3">
-                <span className="w-16 shrink-0 text-ink-soft">{d.completedAt && timeLabel(d.completedAt)}</span>
-                <span className="font-semibold">{d.title}</span>
-              </li>
+      </div>
+      <Modal open={open} onClose={() => setOpen(false)} title="Receipt">
+        <div className="rounded-md bg-[#FFFDF6] px-5 py-4 font-mono text-sm shadow-[0_6px_14px_-6px_rgba(40,20,5,.45)]">
+          <h2 className="m-0 text-center text-base font-extrabold tracking-widest uppercase">Receipt</h2>
+          <p className="m-0 mb-2 text-center text-xs text-ink-soft">{today ? dayLabel(today) : 'Today'}</p>
+          <ul className="m-0 flex list-none flex-col p-0">
+            {newest.length === 0 && <li className="py-2 text-ink-soft">Nothing eaten yet today.</li>}
+            {newest.map((d) => (
+              <ReceiptLine key={d.id} task={d} />
             ))}
           </ul>
-        )}
-      </div>
-    </div>
+          <p className="m-0 mt-2 flex justify-between font-extrabold">
+            <span>Total</span>
+            <span>
+              {done.length} {done.length === 1 ? 'plate' : 'plates'}
+            </span>
+          </p>
+        </div>
+        <div className="flex justify-end">
+          <button type="button" onClick={() => setOpen(false)} className="h-11 rounded-xl bg-white px-5 text-sm font-bold">
+            Done
+          </button>
+        </div>
+      </Modal>
+    </>
   )
 }
