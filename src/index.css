@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/* Tokens from the approved Sushibar canvas design */
+@theme {
+  --font-display: Fredoka, Nunito, sans-serif;
+  --font-sans: Nunito, system-ui, sans-serif;
+  --color-counter: #f3e6d3;
+  --color-navy: #24304d;
+  --color-navy-soft: #c9d2ea;
+  --color-ink: #2e1f14;
+  --color-ink-soft: #5c4b3d;
+  --color-label: #6b4a2e;
+  --color-gold: #f5c842;
+  --color-tomato: #c7392d;
+  --color-belt: #3d3f46;
+  --color-belt-edge: #a9aeb8;
+  --color-wood: #e2b07a;
+  --color-wood-edge: #c98f55;
+}
+
+body {
+  margin: 0;
+  background: var(--color-counter);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
