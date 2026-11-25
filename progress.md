@@ -10,11 +10,12 @@ Plan: "Sushibar Task Planner: Development Plan" (Claude Docs). Look: "Sushibar U
 
 - Phase 2 (the conveyor): looping belt (CSS transform only), pauses on hover/focus/touch/selection/drag plus a Pause button, drag-to-reorder (dnd-kit, saved), sort by due date, due tags, overdue red rim, tap plate highlights its row. Tests: unit + 3 Playwright.
 
+- Phase 3 (eat and stack): Eat button, 300 ms pop + 600 ms arc flight onto the stack (Motion), stack piles (10 per pile, saved tilt), Today's plates list, 5 s Undo toast for eat and delete, midnight rollover into History. Unit tests + 5 Playwright tests.
+
 ## In progress
-- Awaiting approval of Phase 2 (on branch `phase-2`, uncommitted)
+- Awaiting approval of Phase 3 (on branch `phase-3`, uncommitted)
 
 ## Next
-- Phase 3: eat animation, stack piles, undo, day rollover, history
 - Phase 4: persist request, JSON backup, PWA, reduced motion, a11y
 
 ## Open
@@ -23,3 +24,4 @@ Plan: "Sushibar Task Planner: Development Plan" (Claude Docs). Look: "Sushibar U
 - PRODUCT.md missing (`/impeccable init` not run)
 - Belt second row for more than ~12 plates is not built (single looping row); drag works on the real copy only. Revisit if 20+ plates feels crowded.
 - Keyboard: dnd-kit uses Space/Enter to start a drag on a plate, so selecting a plate by keyboard waits for the Phase 4 keyboard pass.
+- Not built from the Phase 3 spec: swipe-up to eat, undo playing the eat in reverse, phone stack as a tap-to-expand corner pile. Day rollover is derived (stack = done plates whose dayKey is today), so there is no stored `lastOpenedDay`.

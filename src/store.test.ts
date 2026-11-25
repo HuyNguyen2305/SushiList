@@ -47,3 +47,31 @@ it('reordering is saved, and sort by due date puts undated plates last', async (
   await reload()
   expect(titles()).toEqual(['C', 'A', 'B'])
 })
+
+it('eating saves the plate as done, and undo restores it exactly', async () => {
+  const s = useStore.getState()
+  await s.add({ title: 'A', sushiTypeId: 'salmon' })
+  const before = useStore.getState().tasks[0]
+
+  await s.eat(before.id)
+  let [t] = await reload()
+  expect(t).toMatchObject({ status: 'done', dayKey: new Date().toLocaleDateString('en-CA') })
+  expect(t.completedAt).toBeDefined()
+  expect(Math.abs(t.stackTilt!)).toBeLessThanOrEqual(3)
+
+  await useStore.getState().undo()
+  ;[t] = await reload()
+  expect(t).toEqual(before)
+})
+
+it('deleting can be undone, and only the latest action is undoable', async () => {
+  const s = useStore.getState()
+  await s.add({ title: 'A', sushiTypeId: 'salmon' })
+  await s.add({ title: 'B', sushiTypeId: 'salmon' })
+  const [a, b] = useStore.getState().tasks
+
+  await s.remove(a.id)
+  await s.eat(b.id)
+  await useStore.getState().undo() // undoes the eat of B, not the delete of A
+  expect((await reload()).map((t) => [t.title, t.status])).toEqual([['B', 'open']])
+})

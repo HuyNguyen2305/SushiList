@@ -1,19 +1,30 @@
 import { create } from 'zustand'
 import type { Task, TaskInput } from './data'
+import { dayKey } from './dates'
 import { db } from './db'
+
+type Undoable = { kind: 'eat' | 'delete'; task: Task }
+// A plate in flight from the belt to the stack. Purely visual: the task is already saved as done.
+type Flight = { task: Task; from: DOMRect; index: number }
 
 type State = {
   tasks: Task[]
   ready: boolean
   error: string | null
   selectedId: string | null
+  undoable: Undoable | null
+  flight: Flight | null
   load: () => Promise<void>
   add: (input: TaskInput) => Promise<void>
   update: (id: string, input: TaskInput) => Promise<void>
   remove: (id: string) => Promise<void>
+  eat: (id: string, from?: DOMRect) => Promise<void>
+  undo: () => Promise<void>
   move: (id: string, overId: string) => Promise<void>
   sortByDue: () => Promise<void>
   select: (id: string | null) => void
+  clearUndo: () => void
+  endFlight: () => void
 }
 
 const clean = (i: TaskInput): TaskInput => ({
@@ -41,7 +52,11 @@ export const useStore = create<State>((set, get) => ({
   ready: false,
   error: null,
   selectedId: null,
+  undoable: null,
+  flight: null,
   select: (id) => set({ selectedId: id }),
+  clearUndo: () => set({ undoable: null }),
+  endFlight: () => set({ flight: null }),
   load: () =>
     save(set, async () => ({
       tasks: await db.tasks.orderBy('beltOrder').toArray(),
@@ -67,10 +82,48 @@ export const useStore = create<State>((set, get) => ({
     }),
   remove: (id) =>
     save(set, async () => {
+      const task = get().tasks.find((t) => t.id === id)
+      if (!task) return {}
       await db.tasks.delete(id)
       return {
         tasks: get().tasks.filter((t) => t.id !== id),
         selectedId: get().selectedId === id ? null : get().selectedId,
+        undoable: { kind: 'delete', task },
+      }
+    }),
+  // "Eating" a plate: it is saved as done at once (nothing is lost if the tab closes mid-animation),
+  // then the optional `from` rectangle lets the UI fly the empty plate onto the stack.
+  eat: (id, from) =>
+    save(set, async () => {
+      const task = get().tasks.find((t) => t.id === id)
+      if (!task || !isOpen(task)) return {}
+      const now = new Date()
+      const done: Task = {
+        ...task,
+        status: 'done',
+        completedAt: now.toISOString(),
+        dayKey: dayKey(now),
+        stackTilt: Math.round((Math.random() * 6 - 3) * 10) / 10,
+      }
+      const index = get().tasks.filter(isOpen).findIndex((t) => t.id === id)
+      await db.tasks.put(done)
+      return {
+        tasks: get().tasks.map((t) => (t.id === id ? done : t)),
+        selectedId: get().selectedId === id ? null : get().selectedId,
+        undoable: { kind: 'eat', task },
+        flight: from ? { task: done, from, index } : null,
+      }
+    }),
+  // Undo restores the task exactly as it was before the last eat or delete.
+  undo: () =>
+    save(set, async () => {
+      const u = get().undoable
+      if (!u) return {}
+      await db.tasks.put(u.task)
+      return {
+        tasks: [...get().tasks.filter((t) => t.id !== u.task.id), u.task].sort(byBelt),
+        undoable: null,
+        flight: null,
       }
     }),
   // Reordering rewrites one row: the moved plate gets a beltOrder between its new neighbours.
