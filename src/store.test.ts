@@ -24,3 +24,26 @@ it('add, edit and delete are saved and survive a reload', async () => {
   expect(tasks).toHaveLength(1)
   expect(tasks[0]).toMatchObject({ title: 'Pay rent today', sushiTypeId: 'tuna' })
 })
+
+const titles = () => useStore.getState().tasks.map((t) => t.title)
+
+it('reordering is saved, and sort by due date puts undated plates last', async () => {
+  const s = useStore.getState()
+  await s.add({ title: 'A', sushiTypeId: 'salmon', dueDate: '2026-12-09' })
+  await s.add({ title: 'B', sushiTypeId: 'salmon' })
+  await s.add({ title: 'C', sushiTypeId: 'salmon', dueDate: '2026-12-01' })
+  const [a, , c] = useStore.getState().tasks
+
+  await s.move(c.id, a.id) // drag C onto A's slot: C goes first
+  expect(titles()).toEqual(['C', 'A', 'B'])
+  await reload()
+  expect(titles()).toEqual(['C', 'A', 'B'])
+
+  await s.move(a.id, useStore.getState().tasks[2].id) // A to the end
+  await reload()
+  expect(titles()).toEqual(['C', 'B', 'A'])
+
+  await s.sortByDue()
+  await reload()
+  expect(titles()).toEqual(['C', 'A', 'B'])
+})
