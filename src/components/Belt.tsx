@@ -42,7 +42,7 @@ function Gap() {
     <motion.div
       aria-hidden="true"
       className="shrink-0"
-      initial={{ width: 104, marginLeft: 0 }}
+      initial={{ width: 120, marginLeft: 0 }}
       animate={{ width: 0, marginLeft: -18 }}
       transition={{ delay: 0.3, duration: 0.3, ease: EASE_OUT }}
     />
@@ -50,6 +50,15 @@ function Gap() {
 }
 
 const copy = 'flex min-w-[100cqw] shrink-0 gap-[18px] px-[9px]'
+const SLOTS = 10 // empty dashed slots pad a short belt, as drawn in the design
+
+function EmptySlot() {
+  return (
+    <div aria-hidden="true" className="flex h-[100px] w-[120px] shrink-0 items-end justify-center">
+      <div className="mb-2 h-[38px] w-[108px] rounded-[50%] border-3 border-dashed border-[#6C707A]" />
+    </div>
+  )
+}
 
 /**
  * The belt is two identical copies side by side that slide left by exactly one copy, so the loop
@@ -79,6 +88,7 @@ export function Belt({ tasks, paused }: { tasks: Task[]; paused: boolean }) {
   const slots = (render: (t: Task) => ReactNode) => {
     const nodes = tasks.map(render)
     if (flight) nodes.splice(flight.index, 0, <Gap key={`gap-${flight.task.id}`} />)
+    for (let i = tasks.length; i < SLOTS; i++) nodes.push(<EmptySlot key={`empty-${i}`} />)
     return nodes
   }
 
@@ -104,7 +114,7 @@ export function Belt({ tasks, paused }: { tasks: Task[]; paused: boolean }) {
       aria-label="Belt of open tasks"
       aria-describedby="belt-help"
       onKeyDown={onKeyDown}
-      className="belt @container h-48 overflow-hidden border-y-[6px] border-belt-edge bg-belt py-3.5 motion-reduce:overflow-x-auto"
+      className="belt @container h-[184px] overflow-hidden border-y-[6px] border-belt-edge bg-belt bg-[repeating-linear-gradient(90deg,rgba(255,255,255,.06)_0_2px,transparent_2px_34px)] pt-3.5 xl:pt-4 motion-reduce:overflow-x-auto"
     >
       <p id="belt-help" className="sr-only">
         Left and right arrows move between plates. Enter selects a plate. E eats it. Space lifts it to reorder, arrows move it, Space drops it. Z undoes the last eat or delete.

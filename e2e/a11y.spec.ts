@@ -5,6 +5,7 @@ test('no automated accessibility violations with plates, a stack and the import 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
   await page.getByLabel('Task title').first().fill('Pay rent')
+  await page.getByRole('button', { name: 'More options' }).click()
   await page.getByLabel('Due date').first().fill('2020-01-05')
   await page.getByRole('button', { name: 'Order' }).click()
   await page.getByLabel('Task title').first().fill('Buy milk')

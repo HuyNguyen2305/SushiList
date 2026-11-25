@@ -3,14 +3,15 @@ import { useLayoutEffect, useState } from 'react'
 import { typeOf } from '../data'
 import { EASE_IN_OUT, EASE_OUT } from '../motion'
 import { useStore } from '../store'
+import { PlateSvg } from './Plate'
 import { Sushi } from './Sushi'
 
 type Target = { dx: number; dy: number; sx: number; sy: number }
 
 /**
  * The key moment: the two pieces pop and vanish (300 ms), then the empty plate lifts off the belt
- * and arcs onto the stack (600 ms), flattening from a top-down circle into the stack's side-on
- * plate and landing with a slight tilt. transform/opacity only. Skipped under reduced motion.
+ * and arcs onto the stack (600 ms), flattening from the plate seen from above into the stack's
+ * side-on plate and landing with a slight tilt. transform/opacity only. Skipped under reduced motion.
  */
 export function Flight() {
   const flight = useStore((s) => s.flight)
@@ -55,16 +56,15 @@ export function Flight() {
       }}
       onAnimationComplete={end}
     >
-      <div className="size-full rounded-full bg-white shadow-[0_4px_0_rgba(0,0,0,.25)]" style={{ border: `7px solid ${type.colour}` }}>
-        <motion.div
-          className="flex size-full items-center justify-center gap-1"
-          animate={{ scale: [1, 1.15, 0], opacity: [1, 1, 0] }}
-          transition={{ duration: 0.3, times: [0, 0.3, 1], ease: EASE_OUT }}
-        >
-          <Sushi id={type.art} />
-          <Sushi id={type.art} />
-        </motion.div>
-      </div>
+      <PlateSvg rim={type.colour} className="absolute inset-0" />
+      <motion.span
+        className="absolute inset-x-0 bottom-[18px] flex items-end justify-center gap-0.5"
+        animate={{ scale: [1, 1.15, 0], opacity: [1, 1, 0] }}
+        transition={{ duration: 0.3, times: [0, 0.3, 1], ease: EASE_OUT }}
+      >
+        <Sushi id={type.art} />
+        <Sushi id={type.art} />
+      </motion.span>
     </motion.div>
   )
 }

@@ -4,6 +4,7 @@
 @theme {
   --font-display: Fredoka, Nunito, sans-serif;
   --font-sans: Nunito, system-ui, sans-serif;
+  --font-jp: 'Yuji Syuku', 'Yu Mincho', 'Hiragino Mincho ProN', 'Noto Serif JP', serif;
   --color-counter: #f3e6d3;
   --color-navy: #24304d;
   --color-navy-soft: #c9d2ea;
@@ -50,9 +51,78 @@ body {
   }
 }
 
+/* The izakaya scene's ambient motion. */
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+@keyframes glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+@keyframes steam {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-22px);
+    opacity: 0;
+  }
+}
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+.sway {
+  animation: sway 5s ease-in-out infinite;
+  transform-origin: 50% 0;
+}
+.glow {
+  animation: glow 4s ease-in-out infinite;
+}
+.steam {
+  animation: steam 3s ease-out infinite;
+}
+.bob {
+  animation: bob 3.2s ease-in-out infinite;
+}
+
+/* The orange wood counter under the belt, on wide screens only. */
+@media (min-width: 1280px) {
+  .wood-counter {
+    background-color: #b97a45;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(90, 50, 20, 0.1) 0 1px, transparent 1px 5px, rgba(255, 220, 170, 0.06) 5px 6px, transparent 6px 14px),
+      repeating-linear-gradient(90deg, transparent 0 318px, rgba(60, 30, 10, 0.25) 318px 320px);
+  }
+}
+
 /* Reduced motion: the belt stands still (a plain scrollable row) and completion is a short fade. */
 @media (prefers-reduced-motion: reduce) {
-  .belt-track {
+  .belt-track,
+  .sway,
+  .glow,
+  .steam,
+  .bob {
     animation: none;
   }
 }
