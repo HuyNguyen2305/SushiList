@@ -8,5 +8,5 @@ import { useStore } from '../store'
 afterEach(async () => {
   cleanup()
   await db.tasks.clear()
-  useStore.setState({ tasks: [], ready: false, error: null })
+  useStore.setState({ tasks: [], ready: false, error: null, selectedId: null })
 })

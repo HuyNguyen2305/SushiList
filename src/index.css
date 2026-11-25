@@ -25,6 +25,25 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Belt: transform-only motion so it stays on the compositor and smooth on phones. */
+@keyframes belt {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.belt-track {
+  animation: belt var(--belt-s, 33s) linear infinite;
+  will-change: transform;
+}
+
+.belt:hover .belt-track,
+.belt:focus-within .belt-track,
+.belt:active .belt-track,
+.belt-track[data-paused] {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;

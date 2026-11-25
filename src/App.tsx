@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { Plate } from './components/Plate'
+import { useEffect, useState } from 'react'
+import { Belt } from './components/Belt'
 import { Stack } from './components/Stack'
 import { TaskForm } from './components/TaskForm'
 import { TaskList } from './components/TaskList'
@@ -13,6 +13,8 @@ export default function App() {
   const error = useStore((s) => s.error)
   const load = useStore((s) => s.load)
   const add = useStore((s) => s.add)
+  const sortByDue = useStore((s) => s.sortByDue)
+  const [paused, setPaused] = useState(false)
 
   useEffect(() => {
     void load()
@@ -40,17 +42,29 @@ export default function App() {
       )}
 
       <section className="flex flex-col gap-2 pt-3.5">
-        <h2 className="mx-5 text-sm font-extrabold tracking-wider text-label uppercase lg:mx-12">
-          On the belt · {open.length} orders
-        </h2>
-        <div className="flex h-44 gap-[18px] overflow-hidden border-y-[6px] border-belt-edge bg-belt p-3.5">
-          {open.map((t) => (
-            <Plate key={t.id} task={t} />
-          ))}
-          {ready && open.length === 0 && (
-            <p className="m-auto font-bold text-white">Nothing on the belt. Add your first plate.</p>
-          )}
+        <div className="mx-5 flex flex-wrap items-center justify-between gap-2 lg:mx-12">
+          <h2 className="text-sm font-extrabold tracking-wider text-label uppercase">On the belt · {open.length} orders</h2>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => void sortByDue()} className="h-11 rounded-xl bg-white px-3 text-sm font-bold">
+              Sort by due date
+            </button>
+            <button
+              type="button"
+              aria-pressed={paused}
+              onClick={() => setPaused(!paused)}
+              className="h-11 rounded-xl bg-navy px-3 text-sm font-bold text-white"
+            >
+              {paused ? 'Play belt' : 'Pause belt'}
+            </button>
+          </div>
         </div>
+        {open.length > 0 ? (
+          <Belt tasks={open} paused={paused} />
+        ) : (
+          <div className="flex h-48 border-y-[6px] border-belt-edge bg-belt">
+            {ready && <p className="m-auto font-bold text-white">Nothing on the belt. Add your first plate.</p>}
+          </div>
+        )}
       </section>
 
       <main className="flex flex-1 flex-col gap-4 p-4 lg:flex-row lg:px-12 lg:py-6">

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { typeOf, type Task } from '../data'
 import { useStore } from '../store'
 import { TaskForm } from './TaskForm'
@@ -6,12 +6,19 @@ import { TaskForm } from './TaskForm'
 function Row({ task }: { task: Task }) {
   const update = useStore((s) => s.update)
   const remove = useStore((s) => s.remove)
+  const selected = useStore((s) => s.selectedId === task.id)
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  const ref = useRef<HTMLLIElement>(null)
+
+  // Tapping a plate on the belt brings its row into view.
+  useEffect(() => {
+    if (selected) ref.current?.scrollIntoView?.({ block: 'nearest' })
+  }, [selected])
 
   if (editing) {
     return (
-      <li>
+      <li ref={ref}>
         <TaskForm
           initial={task}
           submitLabel="Save"
@@ -26,7 +33,10 @@ function Row({ task }: { task: Task }) {
   }
 
   return (
-    <li className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-[0_2px_0_#E2CFB4]">
+    <li
+      ref={ref}
+      className={`flex items-center gap-3 rounded-2xl bg-white p-3 shadow-[0_2px_0_#E2CFB4] ${selected ? 'ring-4 ring-gold' : ''}`}
+    >
       <span aria-hidden="true" className="size-4 shrink-0 rounded-full" style={{ background: typeOf(task.sushiTypeId).colour }} />
       <div className="min-w-0 flex-1">
         <p className="truncate font-extrabold">{task.title}</p>
