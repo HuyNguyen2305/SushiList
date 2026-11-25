@@ -7,3 +7,9 @@ export const isOverdue = (due: string | undefined, today = dayKey()) => !!due &&
 
 export const dueLabel = (due: string) =>
   new Date(`${due}T00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+
+export const dayLabel = (key: string) =>
+  new Date(`${key}T00:00`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+
+export const timeLabel = (iso: string) =>
+  new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
