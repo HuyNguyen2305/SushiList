@@ -19,7 +19,7 @@ function Pile({ plates }: { plates: Task[] }) {
           <div
             key={d.id}
             data-landing={d.id}
-            className="-mb-[3px] flex flex-col items-center"
+            className="-mb-[3px] flex flex-col items-center motion-reduce:animate-[fade-in_.2s_ease-out]"
             style={{ transform: `rotate(${d.stackTilt ?? 0}deg)`, visibility: flightId === d.id ? 'hidden' : undefined }}
           >
             <div className="h-3 w-34 rounded-t-md rounded-b-[40px] shadow-[inset_0_3px_0_rgba(255,255,255,.45)]" style={{ background: colour }} />

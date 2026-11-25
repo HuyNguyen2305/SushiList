@@ -12,11 +12,13 @@ Plan: "Sushibar Task Planner: Development Plan" (Claude Docs). Look: "Sushibar U
 
 - Phase 3 (eat and stack): Eat button, 300 ms pop + 600 ms arc flight onto the stack (Motion), stack piles (10 per pile, saved tilt), Today's plates list, 5 s Undo toast for eat and delete, midnight rollover into History. Unit tests + 5 Playwright tests.
 
+- Phase 4 (safe and installable): persistent-storage request (banner if refused), JSON export/import with validation and Merge/Replace, 7-day backup reminder, PWA (manifest, icons, offline via service worker), self-hosted fonts, reduced-motion pass, keyboard (arrows, Enter, E, Z, Space-to-reorder) and screen-reader labels. Unit tests (15) + 14 Playwright tests incl. offline and an axe scan.
+
 ## In progress
-- Awaiting approval of Phase 3 (on branch `phase-3`, uncommitted)
+- Awaiting approval of Phase 4 (on branch `phase-4`, uncommitted). MVP feature-complete.
 
 ## Next
-- Phase 4: persist request, JSON backup, PWA, reduced motion, a11y
+- Review the MVP, then pick from the plan's "later" list: sync/accounts, shared bars, streaks and stats, sounds and themes, recurring tasks, sub-tasks
 
 ## Open
 - Hosting (Render / GitHub Pages / Cloudflare Pages) and git remote: not chosen, no deploy-on-push yet
@@ -25,3 +27,4 @@ Plan: "Sushibar Task Planner: Development Plan" (Claude Docs). Look: "Sushibar U
 - Belt second row for more than ~12 plates is not built (single looping row); drag works on the real copy only. Revisit if 20+ plates feels crowded.
 - Keyboard: dnd-kit uses Space/Enter to start a drag on a plate, so selecting a plate by keyboard waits for the Phase 4 keyboard pass.
 - Not built from the Phase 3 spec: swipe-up to eat, undo playing the eat in reverse, phone stack as a tap-to-expand corner pile. Day rollover is derived (stack = done plates whose dayKey is today), so there is no stored `lastOpenedDay`.
+- PWA install uses the browser's own prompt (no custom Install button). Not tested on a real phone or in Safari. The persistent-storage request is browser-decided; headless Chromium refuses it, so the banner shows there.

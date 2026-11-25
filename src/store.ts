@@ -1,7 +1,9 @@
 import { create } from 'zustand'
 import type { Task, TaskInput } from './data'
 import { dayKey } from './dates'
+import { makeBackup } from './backup'
 import { db } from './db'
+import { initStorage, markBackup, type StorageInfo } from './storage'
 
 type Undoable = { kind: 'eat' | 'delete'; task: Task }
 // A plate in flight from the belt to the stack. Purely visual: the task is already saved as done.
@@ -14,6 +16,7 @@ type State = {
   selectedId: string | null
   undoable: Undoable | null
   flight: Flight | null
+  storage: StorageInfo | null
   load: () => Promise<void>
   add: (input: TaskInput) => Promise<void>
   update: (id: string, input: TaskInput) => Promise<void>
@@ -22,6 +25,9 @@ type State = {
   undo: () => Promise<void>
   move: (id: string, overId: string) => Promise<void>
   sortByDue: () => Promise<void>
+  startStorage: () => Promise<void>
+  exportBackup: () => Promise<void>
+  importTasks: (tasks: Task[], mode: 'merge' | 'replace') => Promise<void>
   select: (id: string | null) => void
   clearUndo: () => void
   endFlight: () => void
@@ -54,9 +60,41 @@ export const useStore = create<State>((set, get) => ({
   selectedId: null,
   undoable: null,
   flight: null,
+  storage: null,
   select: (id) => set({ selectedId: id }),
   clearUndo: () => set({ undoable: null }),
   endFlight: () => set({ flight: null }),
+  // Asks the browser to keep storage permanently and loads the backup reminder info. Failing is not fatal.
+  startStorage: async () => {
+    try {
+      set({ storage: await initStorage() })
+    } catch {
+      /* storage info is advisory only */
+    }
+  },
+  exportBackup: async () => {
+    const blob = new Blob([JSON.stringify(makeBackup(get().tasks), null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `sushibar-backup-${dayKey()}.json`
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 0)
+    await markBackup()
+    await get().startStorage()
+  },
+  // Merge keeps what is here and adds plates with new ids at the end of the belt; replace swaps everything.
+  importTasks: (incoming, mode) =>
+    save(set, async () => {
+      const have = new Set(get().tasks.map((t) => t.id))
+      const offset = Math.max(0, ...get().tasks.map((t) => t.beltOrder))
+      const add = mode === 'merge' ? incoming.filter((t) => !have.has(t.id)).map((t) => ({ ...t, beltOrder: t.beltOrder + offset })) : incoming
+      await db.transaction('rw', db.tasks, async () => {
+        if (mode === 'replace') await db.tasks.clear()
+        await db.tasks.bulkPut(add)
+      })
+      return { tasks: await db.tasks.orderBy('beltOrder').toArray(), selectedId: null, undoable: null, flight: null }
+    }),
   load: () =>
     save(set, async () => ({
       tasks: await db.tasks.orderBy('beltOrder').toArray(),

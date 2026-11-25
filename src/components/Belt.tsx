@@ -11,7 +11,7 @@ import {
 import { horizontalListSortingStrategy, SortableContext, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { motion } from 'motion/react'
-import { useState, type CSSProperties, type ReactNode } from 'react'
+import { useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react'
 import type { Task } from '../data'
 import { EASE_OUT } from '../motion'
 import { useStore } from '../store'
@@ -64,7 +64,11 @@ export function Belt({ tasks, paused }: { tasks: Task[]; paused: boolean }) {
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    // Space lifts a plate to reorder it (arrows move it, Space drops); Enter stays free to select it.
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+      keyboardCodes: { start: ['Space'], cancel: ['Escape'], end: ['Space', 'Enter'] },
+    }),
   )
 
   function onDragEnd(e: DragEndEvent) {
@@ -78,11 +82,33 @@ export function Belt({ tasks, paused }: { tasks: Task[]; paused: boolean }) {
     return nodes
   }
 
+  // Arrow keys step focus between plates (not while one is lifted: the drag uses them).
+  function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+    const t = e.target as HTMLElement
+    if (!t.dataset.plate || t.getAttribute('aria-pressed') === 'true') return
+    const all = [...e.currentTarget.querySelectorAll<HTMLElement>('[data-plate]')]
+    const next = all[all.indexOf(t) + (e.key === 'ArrowRight' ? 1 : -1)]
+    if (next) {
+      e.preventDefault()
+      next.focus()
+    }
+  }
+
   // About one plate width every 3 seconds; at least 11 plates' worth so a short belt is not frantic.
   const seconds = Math.max(tasks.length, 11) * 3
 
   return (
-    <div className="belt @container h-48 overflow-hidden border-y-[6px] border-belt-edge bg-belt py-3.5 motion-reduce:overflow-x-auto">
+    <div
+      role="group"
+      aria-label="Belt of open tasks"
+      aria-describedby="belt-help"
+      onKeyDown={onKeyDown}
+      className="belt @container h-48 overflow-hidden border-y-[6px] border-belt-edge bg-belt py-3.5 motion-reduce:overflow-x-auto"
+    >
+      <p id="belt-help" className="sr-only">
+        Left and right arrows move between plates. Enter selects a plate. E eats it. Space lifts it to reorder, arrows move it, Space drops it. Z undoes the last eat or delete.
+      </p>
       <div
         className="belt-track flex w-max"
         data-paused={paused || dragging || selectedId !== null || undefined}

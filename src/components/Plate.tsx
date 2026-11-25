@@ -19,8 +19,8 @@ export function PlateView({ task, selected, rootRef, rootStyle, ...button }: Pro
     <div ref={rootRef} style={rootStyle} className="relative flex w-[104px] shrink-0 flex-col items-center gap-1.5">
       <button
         type="button"
-        aria-label={`Pick plate: ${task.title}`}
-        className="flex size-24 cursor-pointer items-center justify-center gap-1 rounded-full bg-white p-0 shadow-[0_4px_0_rgba(0,0,0,.25)] transition-transform hover:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-gold data-[selected]:shadow-[0_0_0_4px_#fff,0_0_0_8px_var(--color-gold)]"
+        aria-label={`Pick plate: ${task.title}${task.dueDate ? `, due ${dueLabel(task.dueDate)}${overdue ? ' (overdue)' : ''}` : ''}`}
+        className="flex size-24 cursor-pointer items-center justify-center gap-1 rounded-full bg-white p-0 shadow-[0_4px_0_rgba(0,0,0,.25)] transition-transform hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-gold data-[selected]:shadow-[0_0_0_4px_#fff,0_0_0_8px_var(--color-gold)]"
         style={{ border: `7px solid ${overdue ? OVERDUE_RIM : type.colour}` }}
         data-selected={selected || undefined}
         {...button}
