@@ -32,15 +32,16 @@ export function PlateSvg({ rim, className = 'absolute bottom-0 left-0' }: { rim:
 type Props = {
   task: Task
   selected?: boolean
+  held?: boolean // on the table, in the chef's hand: the slot stays but the plate is not drawn
   rootRef?: Ref<HTMLDivElement>
   rootStyle?: CSSProperties
 } & ComponentProps<'button'>
 
-export function PlateView({ task, selected, rootRef, rootStyle, ...button }: Props) {
+export function PlateView({ task, selected, held, rootRef, rootStyle, ...button }: Props) {
   const type = useCategory(task.sushiTypeId)
   const overdue = isOverdue(task.dueDate)
   return (
-    <div ref={rootRef} style={rootStyle} className="relative flex w-[120px] shrink-0 flex-col items-center gap-1.5">
+    <div ref={rootRef} style={rootStyle} data-held={held || undefined} className="plate-root relative flex w-[120px] shrink-0 flex-col items-center gap-1.5">
       <button
         type="button"
         aria-label={`Pick plate: ${task.title}${task.dueDate ? `, due ${dueLabel(task.dueDate)}${overdue ? ' (overdue)' : ''}` : ''}`}

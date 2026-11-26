@@ -36,10 +36,10 @@ export function PickedCard({ openCount }: { openCount: number }) {
             <button type="button" onClick={() => void eatPlate(task.id)} className="h-11 flex-1 rounded-xl bg-tomato text-[15px] font-extrabold text-white">
               Eat it · mark done
             </button>
-            <button type="button" onClick={() => void remove(task.id)} className="h-11 rounded-xl border-2 border-[#D8C6AE] bg-white px-3.5 text-sm font-bold">
+            <button type="button" onClick={() => select(null)} className="h-11 rounded-xl border-2 border-[#D8C6AE] bg-white px-3.5 text-sm font-bold">
               Send back
             </button>
-            <button type="button" onClick={() => select(null)} aria-label="Put plate back on the belt" className="flex size-11 items-center justify-center rounded-xl bg-counter">
+            <button type="button" onClick={() => void remove(task.id)} aria-label="Delete plate" title="Delete plate" className="flex size-11 items-center justify-center rounded-xl bg-counter">
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>

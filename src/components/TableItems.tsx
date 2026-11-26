@@ -10,7 +10,7 @@ const item = 'group flex w-[78px] cursor-pointer flex-col items-center gap-1 bor
 function Ledger() {
   return (
     <svg viewBox="0 0 64 48" width="64" height="48" aria-hidden="true" className="transition-transform group-hover:-translate-y-0.5 motion-reduce:transition-none">
-      <ellipse cx="32" cy="43" rx="28" ry="4" fill="#000" opacity=".3" />
+      <ellipse cx="34" cy="38" rx="30" ry="5" fill="#000" opacity=".3" />
       <path d="M6 38V14L14 8H58V32L50 38Z" fill="#1A2238" />
       <path d="M6 14H50V38H6Z" fill="#24304D" />
       <path d="M50 14L58 8V32L50 38Z" fill="#F4EDE0" />
@@ -26,7 +26,7 @@ function Ledger() {
 function LacquerBox() {
   return (
     <svg viewBox="0 0 64 48" width="64" height="48" aria-hidden="true" className="transition-transform group-hover:-translate-y-0.5 motion-reduce:transition-none">
-      <ellipse cx="32" cy="43" rx="26" ry="4" fill="#000" opacity=".3" />
+      <ellipse cx="32" cy="42" rx="28" ry="4.5" fill="#000" opacity=".3" />
       <rect x="10" y="26" width="44" height="16" rx="3" fill="#1C1008" />
       <rect x="10" y="26" width="44" height="5" rx="2" fill="#fff" opacity=".1" />
       <rect x="8" y="10" width="48" height="17" rx="3" fill="#C7392D" />

@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { Belt } from './components/Belt'
 import { Depth } from './components/Depth'
 import { Flight } from './components/Flight'
+import { Hand } from './components/Hand'
 import { Notices } from './components/Notices'
 import { PickedCard } from './components/PickedCard'
 import { CounterBase } from './components/CounterBase'
@@ -151,6 +152,7 @@ export default function App() {
       </div>
       <Depth />
       <Flight />
+      <Hand />
       <Toast />
     </MotionConfig>
   )

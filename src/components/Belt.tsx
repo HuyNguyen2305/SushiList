@@ -25,6 +25,7 @@ function SortablePlate({ task }: { task: Task }) {
     <PlateView
       task={task}
       selected={selectedId === task.id}
+      held={selectedId === task.id}
       onClick={() => select(selectedId === task.id ? null : task.id)}
       rootRef={setNodeRef}
       rootStyle={{ transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 10 : undefined }}
@@ -59,6 +60,7 @@ const copy = 'belt-copy flex min-h-full min-w-[100cqw] shrink-0 gap-[18px] px-[9
 export function Belt({ tasks }: { tasks: Task[] }) {
   const move = useStore((s) => s.move)
   const flight = useStore((s) => s.flight)
+  const selectedId = useStore((s) => s.selectedId)
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
@@ -116,7 +118,7 @@ export function Belt({ tasks }: { tasks: Task[] }) {
           </SortableContext>
         </DndContext>
         <div aria-hidden="true" inert className={`${copy} motion-reduce:hidden`}>
-          {slots((t) => <PlateView key={t.id} task={t} tabIndex={-1} />)}
+          {slots((t) => <PlateView key={t.id} task={t} held={selectedId === t.id} tabIndex={-1} />)}
         </div>
       </div>
     </div>

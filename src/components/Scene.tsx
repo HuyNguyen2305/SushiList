@@ -220,7 +220,7 @@ export function CounterDecor() {
       <div className="steam absolute top-[31%] left-[15%] h-[18px] w-1.5 rounded-[3px] bg-white/70 [animation-delay:-1.5s]" />
       <svg viewBox="0 0 360 130" className="block h-auto w-full">
         {/* tea cup on its saucer */}
-        <ellipse cx="54" cy="121" rx="42" ry="7" fill={shadow} />
+        <ellipse cx="54" cy="117" rx="40" ry="5.5" fill={shadow} />
         <ellipse cx="54" cy="114" rx="36" ry="7" fill="#F4EDE0" />
         <ellipse cx="54" cy="112" rx="30" ry="5" fill="#E4D9C4" />
         <path d="M28 70H80V86Q80 110 54 110Q28 110 28 86Z" fill="#7D8C6A" />
@@ -229,25 +229,25 @@ export function CounterDecor() {
         <ellipse cx="54" cy="71" rx="22" ry="3.8" fill="#B7C48E" />
         <path d="M33 80Q34 100 46 106" stroke="#fff" strokeOpacity=".25" strokeWidth="3" strokeLinecap="round" fill="none" />
         {/* tokkuri */}
-        <ellipse cx="132" cy="120" rx="30" ry="6" fill={shadow} />
+        <ellipse cx="132" cy="116" rx="35" ry="5.5" fill={shadow} />
         <path d="M110 114Q100 96 108 78Q113 67 124 64V46H140V64Q151 67 156 78Q164 96 154 114Q132 120 110 114Z" fill="#24304D" />
         <rect x="121" y="43" width="22" height="6" rx="3" fill="#1A2238" />
         <rect x="106" y="86" width="52" height="11" fill="#F4EDE0" opacity=".92" />
         <rect x="106" y="90" width="52" height="3" fill="#D9A441" />
         <path d="M114 74Q112 92 118 106" stroke="#fff" strokeOpacity=".22" strokeWidth="3.5" strokeLinecap="round" fill="none" />
         {/* two ochoko cups */}
-        <ellipse cx="184" cy="120" rx="15" ry="4" fill={shadow} />
+        <ellipse cx="184" cy="115" rx="15" ry="3.5" fill={shadow} />
         <path d="M172 96H196L193 114Q184 117 175 114Z" fill="#F4EDE0" />
         <path d="M174 104H194" stroke="#C7392D" strokeWidth="2" />
         <ellipse cx="184" cy="96" rx="12" ry="3.2" fill="#E4D9C4" />
         <ellipse cx="184" cy="96.5" rx="9.5" ry="2.2" fill="#E8DDBF" />
-        <ellipse cx="212" cy="121" rx="13" ry="3.6" fill={shadow} />
+        <ellipse cx="212" cy="117" rx="13" ry="3.2" fill={shadow} />
         <path d="M202 101H222L219.5 117Q212 119.5 204.5 117Z" fill="#F4EDE0" />
         <path d="M204 108H220" stroke="#C7392D" strokeWidth="2" />
         <ellipse cx="212" cy="101" rx="10" ry="2.8" fill="#E4D9C4" />
         <ellipse cx="212" cy="101.4" rx="8" ry="1.9" fill="#E8DDBF" />
         {/* soy dish, wasabi, pickled ginger */}
-        <ellipse cx="262" cy="121" rx="32" ry="6" fill={shadow} />
+        <ellipse cx="262" cy="117" rx="32" ry="6" fill={shadow} />
         <ellipse cx="262" cy="114" rx="30" ry="7.5" fill="#F4EDE0" stroke="#D8C6AE" strokeWidth="1.5" />
         <ellipse cx="254" cy="112" rx="15" ry="4" fill="#2A1408" />
         <ellipse cx="250" cy="110.8" rx="6" ry="1.2" fill="#fff" opacity=".25" />
@@ -256,7 +256,7 @@ export function CounterDecor() {
         <ellipse cx="270" cy="117.5" rx="5" ry="1.8" fill="#F2A6A0" />
         <ellipse cx="277" cy="118.5" rx="4.5" ry="1.6" fill="#EC8F8A" />
         {/* chopsticks on a rest */}
-        <ellipse cx="328" cy="120" rx="26" ry="4" fill={shadow} />
+        <ellipse cx="324" cy="118" rx="32" ry="5" fill={shadow} />
         <rect x="318" y="108" width="16" height="8" rx="3" fill="#24304D" />
         <path d="M296 122L350 105M298 117L352 100" stroke="#3A2414" strokeWidth="3.2" strokeLinecap="round" />
         <path d="M296 122L316 116M298 117L318 111" stroke="#C7392D" strokeWidth="3.2" strokeLinecap="round" />
