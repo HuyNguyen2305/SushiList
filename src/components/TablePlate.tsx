@@ -1,6 +1,6 @@
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { dueLabel, isOverdue } from '../dates'
-import { EASE_OUT } from '../motion'
+import { HAND_CARRY, HAND_REACH } from '../motion'
 import { useCategory, useStore } from '../store'
 import { PLATE_W, PlateSvg } from './Plate'
 import { Sushi } from './Sushi'
@@ -12,20 +12,22 @@ export function TablePlate() {
   const task = useStore((s) => s.tasks.find((t) => t.id === s.selectedId && t.status === 'open'))
   const type = useCategory(task?.sushiTypeId ?? '')
   const overdue = isOverdue(task?.dueDate)
+  const still = useReducedMotion()
 
   return (
-    <div className="pointer-events-none relative z-10 hidden min-h-0 w-full min-w-0 flex-1 flex-col items-center justify-center gap-3 xl:flex">
+    <div data-table-spot className="pointer-events-none relative z-10 hidden min-h-0 w-full min-w-0 flex-1 flex-col items-center justify-center gap-3 xl:flex">
       <p className="sr-only" aria-live="polite">{task ? `On your table: ${task.title}` : ''}</p>
       {task ? (
         <motion.div
           key={task.id}
-          initial={{ opacity: 0, y: -28, scale: 0.92 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.28, ease: EASE_OUT }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          // appears as the hand lets go of it (see Hand)
+          transition={{ delay: still ? 0 : HAND_REACH + HAND_CARRY + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hand-lag')) || 0), duration: 0.12 }}
           className="p3d flex flex-col items-center gap-1.5"
         >
-          <div className="plate-sway p3d relative" style={{ width: `calc(${PLATE_W}px * ${K})`, height: `calc(100px * ${K})` }}>
-            <div aria-hidden="true" className="absolute bottom-1 left-[12%] h-5 w-[76%] rounded-[50%] bg-black/40 blur-md" />
+          <div data-table-plate className="plate-sway p3d relative" style={{ width: `calc(${PLATE_W}px * ${K})`, height: `calc(100px * ${K})` }}>
+            <div aria-hidden="true" className="absolute bottom-0 left-[2%] h-6 w-[96%] rounded-[50%] bg-black/40 blur-md" />
             <div className="plate-tilt p3d absolute inset-0">
               <div className="p3d absolute top-0 left-0 origin-top-left" style={{ width: PLATE_W, height: 100, transform: `scale(${K})` }}>
                 <PlateSvg rim={overdue ? '#C7392D' : type.colour} className="absolute bottom-0 left-0" />

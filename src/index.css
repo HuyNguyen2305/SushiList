@@ -345,3 +345,16 @@ body {
     transition: none;
   }
 }
+
+/* A picked plate is off the belt (the hand has it): its slot stays, empty. Timings match HAND_* in motion.ts. */
+@media (min-width: 80rem) and (prefers-reduced-motion: no-preference) {
+  .plate-root > span,
+  .plate-root > button > * {
+    transition: opacity 0s linear 0.7s; /* reappears when the hand lets go on the way back */
+  }
+  .plate-root[data-held] > span,
+  .plate-root[data-held] > button > * {
+    opacity: 0;
+    transition-delay: calc(0.28s + var(--hand-lag, 0s)); /* vanishes when the hand grabs it */
+  }
+}
